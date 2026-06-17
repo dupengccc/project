@@ -40,28 +40,54 @@
     <!-- 右侧：人员信息 -->
     <div class="user-content">
       <el-card shadow="never">
-        <div class="content-header">
-          <div class="header-title">
-            <span>人员管理</span>
-            <el-tag size="small" v-if="selectedOrg">当前组织：{{ selectedOrg.name }}</el-tag>
-            <el-tag size="small" v-else type="warning">请在左侧选择组织</el-tag>
+        <div class="search-bar">
+          <div class="search-left">
+            <el-form :inline="true" :model="queryForm" class="search-form">
+              <el-form-item label="工号">
+                <el-input
+                  v-model="queryForm.empNo"
+                  placeholder="请输入工号"
+                  prefix-icon="Postcard"
+                  clearable
+                  style="width: 180px"
+                  @keyup.enter="loadData"
+                />
+              </el-form-item>
+              <el-form-item label="姓名">
+                <el-input
+                  v-model="queryForm.name"
+                  placeholder="请输入姓名"
+                  prefix-icon="User"
+                  clearable
+                  style="width: 180px"
+                  @keyup.enter="loadData"
+                />
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="loadData">
+                  <el-icon><Search /></el-icon>查询
+                </el-button>
+                <el-button @click="resetQuery">
+                  <el-icon><RefreshLeft /></el-icon>重置
+                </el-button>
+              </el-form-item>
+            </el-form>
           </div>
-          <div class="header-actions">
-            <el-input
-              v-model="queryForm.keyword"
-              placeholder="搜索姓名/工号/账号/邮箱"
-              prefix-icon="Search"
-              clearable
-              style="width: 260px; margin-right: 8px"
-              @keyup.enter="loadData"
-            />
-            <el-button type="primary" @click="handleAdd" :disabled="!selectedOrg">
+          <div class="search-right">
+            <el-button type="success" @click="handleAdd" :disabled="!selectedOrg">
               <el-icon><Plus /></el-icon>新增人员
             </el-button>
-            <el-button @click="loadData">
-              <el-icon><Refresh /></el-icon>刷新
-            </el-button>
           </div>
+        </div>
+
+        <div class="org-tips">
+          <el-icon><InfoFilled /></el-icon>
+          当前组织：<b>{{ selectedOrg ? selectedOrg.name : '未选择' }}</b>
+          <span v-if="queryForm.empNo || queryForm.name">｜筛选条件：
+            <el-tag v-if="queryForm.empNo" size="small" effect="plain">工号 {{ queryForm.empNo }}</el-tag>
+            <el-tag v-if="queryForm.name" size="small" effect="plain" style="margin-left: 4px">姓名 {{ queryForm.name }}</el-tag>
+          </span>
+          <span style="margin-left: 12px; color: #909399">共匹配 {{ total }} 条记录</span>
         </div>
 
         <el-table
@@ -311,13 +337,14 @@ const allUsers = ref([
 ])
 
 const queryForm = reactive({
-  keyword: '',
+  empNo: '',
+  name: '',
   page: 1,
   pageSize: 10
 })
 
 const total = ref(0)
-const tableHeight = ref('calc(100vh - 260px)')
+const tableHeight = ref('calc(100vh - 280px)')
 
 // 工具：获取一个组织及其所有子组织的 id 列表
 function getOrgAndChildrenIds(node, ids = []) {
@@ -330,21 +357,28 @@ function getOrgAndChildrenIds(node, ids = []) {
   return ids
 }
 
-// 根据选中的组织，筛选出对应人员
+// 统一字段归一化
+function normalize(val) {
+  return (val == null ? '' : String(val)).trim().toLowerCase()
+}
+
+// 人员列表过滤（按组织 + 工号/姓名）
 const filteredList = computed(() => {
   if (!selectedOrg.value) return []
   const ids = getOrgAndChildrenIds(selectedOrg.value)
   let list = allUsers.value.filter((u) => ids.includes(u.orgId))
-  const kw = queryForm.keyword.trim().toLowerCase()
-  if (kw) {
-    list = list.filter(
-      (u) =>
-        (u.name || '').toLowerCase().includes(kw) ||
-        (u.empNo || '').toLowerCase().includes(kw) ||
-        (u.username || '').toLowerCase().includes(kw) ||
-        (u.email || '').toLowerCase().includes(kw)
-    )
+
+  const empNoKw = normalize(queryForm.empNo)
+  const nameKw = normalize(queryForm.name)
+
+  if (empNoKw || nameKw) {
+    list = list.filter((u) => {
+      const matchEmpNo = empNoKw ? normalize(u.empNo).includes(empNoKw) : true
+      const matchName = nameKw ? normalize(u.name).includes(nameKw) : true
+      return matchEmpNo && matchName
+    })
   }
+
   total.value = list.length
   const start = (queryForm.page - 1) * queryForm.pageSize
   return list.slice(start, start + queryForm.pageSize)
@@ -365,8 +399,14 @@ function handleOrgClick(data) {
 }
 
 function loadData() {
-  // 模拟刷新
-  ElMessage.success('已刷新')
+  queryForm.page = 1
+  ElMessage.success('查询完成')
+}
+
+function resetQuery() {
+  queryForm.empNo = ''
+  queryForm.name = ''
+  queryForm.page = 1
 }
 
 // 表单
@@ -577,6 +617,37 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 8px;
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #fafbfc;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+}
+.search-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 12px;
+}
+.search-form :deep(.el-form-item__label) {
+  color: #606266;
+  font-weight: 500;
+}
+.org-tips {
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #606266;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #ecf5ff;
+  border-radius: 4px;
+}
+.org-tips b {
+  color: #409eff;
 }
 .header-title {
   display: flex;
