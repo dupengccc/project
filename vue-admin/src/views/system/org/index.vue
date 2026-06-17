@@ -9,10 +9,19 @@
           新增
         </el-button>
       </div>
+      <div class="tree-filter">
+        <el-input
+          v-model="filterText"
+          placeholder="搜索组织名称 / 组织编码"
+          prefix-icon="Search"
+          clearable
+          size="small"
+        />
+      </div>
       <el-scrollbar class="tree-scrollbar">
         <el-tree
           ref="treeRef"
-          :data="orgTree"
+          :data="filteredTree"
           :props="{ label: 'name', children: 'children' }"
           node-key="id"
           :expand-on-click-node="false"
@@ -29,6 +38,7 @@
                   <Grid v-else />
                 </el-icon>
                 {{ node.label }}
+                <span class="node-code">{{ data.code ? '(' + data.code + ')' : '' }}</span>
               </span>
               <span class="node-actions" @click.stop>
                 <el-tooltip content="新增子组织" placement="top">
@@ -65,6 +75,7 @@
         </template>
         <el-descriptions :column="1" border>
           <el-descriptions-item label="组织名称">{{ selectedNode.name }}</el-descriptions-item>
+          <el-descriptions-item label="组织编码">{{ selectedNode.code || '—' }}</el-descriptions-item>
           <el-descriptions-item label="组织类型">
             <el-tag :type="typeTag(selectedNode.type)">{{ typeLabel(selectedNode.type) }}</el-tag>
           </el-descriptions-item>
@@ -75,7 +86,8 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="上级组织">{{ selectedNode.parentName || '无' }}</el-descriptions-item>
-          <el-descriptions-item label="组织编码">{{ selectedNode.code || '—' }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{ selectedNode.createTime || '—' }}</el-descriptions-item>
+          <el-descriptions-item label="创建人">{{ selectedNode.creator || '—' }}</el-descriptions-item>
         </el-descriptions>
       </el-card>
       <el-empty v-else description="请从左侧选择一个组织" />
@@ -146,6 +158,7 @@ const dialogVisible = ref(false)
 const dialogMode = ref('add')
 const submitLoading = ref(false)
 const formRef = ref()
+const filterText = ref('')
 
 const form = reactive({
   id: null,
@@ -154,7 +167,8 @@ const form = reactive({
   code: '',
   type: 'dept',
   sort: 0,
-  status: 0
+  status: 0,
+  creator: ''
 })
 
 const rules = {
@@ -165,6 +179,25 @@ const rules = {
 // 将树数据转为一维数组（用于 el-tree-select）
 const treeSelectData = computed(() => {
   return [{ id: null, name: '无（顶级）', children: orgTree.value }]
+})
+
+// 筛选：按名称或编码过滤（递归保留匹配节点的完整祖先链）
+const filteredTree = computed(() => {
+  if (!filterText.value) return orgTree.value
+  const kw = filterText.value.trim().toLowerCase()
+  const filterNode = (nodes) => {
+    return nodes
+      .map((n) => {
+        const matched = !!(n.name || '').toLowerCase().includes(kw) || !!(n.code || '').toLowerCase().includes(kw)
+        const filteredChildren = filterNode(n.children || [])
+        if (matched || filteredChildren.length) {
+          return { ...n, children: filteredChildren }
+        }
+        return null
+      })
+      .filter(Boolean)
+  }
+  return filterNode(orgTree.value)
 })
 
 function handleNodeClick(data) {
@@ -194,6 +227,7 @@ function openAddDialog(parent) {
   form.type = parent ? 'dept' : 'group'
   form.sort = 0
   form.status = 0
+  form.creator = '当前用户'
   dialogVisible.value = true
 }
 
@@ -203,9 +237,10 @@ function openAddChildDialog(parent) {
   form.parentId = parent.id
   form.name = ''
   form.code = ''
-  form.type = parent.type === 'dept' ? 'dept' : 'dept'
+  form.type = 'dept'
   form.sort = (parent.children?.length || 0) + 1
   form.status = 0
+  form.creator = '当前用户'
   dialogVisible.value = true
 }
 
@@ -218,6 +253,7 @@ function openEditDialog(node) {
   form.type = node.type
   form.sort = node.sort
   form.status = node.status
+  form.creator = node.creator || ''
   dialogVisible.value = true
 }
 
@@ -251,6 +287,8 @@ async function handleSubmit() {
           type: form.type,
           sort: form.sort,
           status: form.status,
+          createTime: formatTime(new Date()),
+          creator: form.creator,
           children: []
         }
         if (form.parentId) {
@@ -276,7 +314,14 @@ async function handleSubmit() {
         const updateNode = (nodes) => {
           for (const n of nodes) {
             if (n.id === form.id) {
-              Object.assign(n, { name: form.name, code: form.code, type: form.type, sort: form.sort, status: form.status })
+              Object.assign(n, {
+                name: form.name,
+                code: form.code,
+                type: form.type,
+                sort: form.sort,
+                status: form.status,
+                creator: form.creator
+              })
               return true
             }
             if (n.children?.length && updateNode(n.children)) return true
@@ -343,6 +388,11 @@ function typeTag(type) {
   return { group: 'primary', branch: 'success', dept: 'warning' }[type] || ''
 }
 
+function formatTime(date) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
 onMounted(() => {
   orgStore.loadTree()
 })
@@ -371,6 +421,10 @@ onMounted(() => {
   font-weight: 600;
   color: #303133;
 }
+.tree-filter {
+  padding: 8px 12px;
+  border-bottom: 1px solid #ebeef5;
+}
 .tree-scrollbar {
   flex: 1;
   padding: 8px;
@@ -387,6 +441,10 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   font-size: 13px;
+}
+.node-code {
+  color: #909399;
+  font-size: 12px;
 }
 .node-actions {
   display: flex;
