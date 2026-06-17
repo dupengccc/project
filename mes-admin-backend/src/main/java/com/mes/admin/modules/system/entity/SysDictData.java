@@ -1,0 +1,45 @@
+package com.mes.admin.modules.system.entity;
+
+import com.mes.admin.common.entity.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Entity
+@Table(name = "sys_dict_data")
+public class SysDictData extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Integer dictSort;
+
+    @Column(length = 128)
+    private String dictLabel;
+
+    @Column(length = 128)
+    private String dictValue;
+
+    @Column(length = 128)
+    private String dictType;
+
+    @Column(length = 128)
+    private String cssClass;
+
+    @Column(length = 128)
+    private String listClass;
+
+    @Column(length = 8)
+    private String isDefault;
+
+    private Integer status;
+}

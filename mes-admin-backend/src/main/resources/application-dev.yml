@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:dm://127.0.0.1:5236/MES
+    username: SYSDBA
+    password: SYSDBA
+    dynamic:
+      datasource:
+        master:
+          url: jdbc:dm://127.0.0.1:5236/MES
+        slave:
+          url: jdbc:dm://127.0.0.1:5236/MES_SLAVE
+        mes:
+          url: jdbc:mysql://127.0.0.1:3306/mes?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8
+          username: root
+          password: root
+  jpa:
+    show-sql: true
+  redis:
+    host: 127.0.0.1
+    port: 6379
