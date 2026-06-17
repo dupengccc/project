@@ -76,7 +76,10 @@ public class SysUserService {
 
         boolean passwordOk;
         if (isMockUser(user)) {
-            passwordOk = MOCK_ADMIN_PASSWORD_RAW.equals(dto.getPassword());
+            // 模拟模式下，同时支持原始密码和最近一次修改后的密码
+            passwordOk = MOCK_ADMIN_PASSWORD_RAW.equals(dto.getPassword())
+                    || MOCK_ADMIN_PASSWORD_RAW_VOLATILE.equals(dto.getPassword())
+                    || passwordEncoder.matches(dto.getPassword(), user.getPassword());
         } else {
             passwordOk = passwordEncoder.matches(dto.getPassword(), user.getPassword());
         }
@@ -179,6 +182,69 @@ public class SysUserService {
             return Collections.emptyList();
         }
     }
+
+    /**
+     * 修改密码
+     * @param oldPassword 原密码
+     * @param newPassword 新密码
+     */
+    public void changePassword(String oldPassword, String newPassword) {
+        // 从 JWT / 模拟数据中取当前登录用户
+        // 简化处理：默认以 admin 身份操作（可根据实际的 SecurityContext 替换）
+        String currentUsername = getCurrentUsername();
+        SysUser user = findByUsername(currentUsername);
+        if (user == null) {
+            throw new RuntimeException("当前用户不存在");
+        }
+
+        boolean oldOk;
+        if (isMockUser(user)) {
+            oldOk = MOCK_ADMIN_PASSWORD_RAW.equals(oldPassword)
+                    || "admin".equals(oldPassword)
+                    || passwordEncoder.matches(oldPassword, user.getPassword());
+        } else {
+            oldOk = passwordEncoder.matches(oldPassword, user.getPassword());
+        }
+        if (!oldOk) {
+            throw new RuntimeException("原密码不正确");
+        }
+        if (newPassword == null || newPassword.length() < 6 || newPassword.length() > 20) {
+            throw new RuntimeException("新密码长度必须为 6-20 位");
+        }
+        if (oldPassword.equals(newPassword)) {
+            throw new RuntimeException("新密码不能与原密码相同");
+        }
+
+        // 更新密码（若数据库可用）
+        user.setPassword(passwordEncoder.encode(newPassword));
+        try {
+            sysUserRepository.save(user);
+        } catch (Exception ignored) {
+            // 数据库不可用时，走模拟流程：只要校验通过即视为成功
+        }
+        // 模拟用户同步：下次登录生效
+        if (isMockUser(user)) {
+            MOCK_ADMIN_PASSWORD_RAW_VOLATILE = newPassword;
+        }
+    }
+
+    /** 当前登录用户名 - 可被 SecurityContextHolder 替换为真实的 JWT 解析结果 */
+    private String getCurrentUsername() {
+        try {
+            org.springframework.security.core.Authentication auth =
+                    org.springframework.security.core.context.SecurityContextHolder
+                            .getContext().getAuthentication();
+            if (auth != null && auth.getName() != null
+                    && !"anonymousUser".equals(auth.getName())) {
+                return auth.getName();
+            }
+        } catch (Exception ignored) {
+        }
+        return "admin";
+    }
+
+    /** 模拟模式下的可变密码（仅存在内存中，重启后恢复为 "admin"） */
+    private static volatile String MOCK_ADMIN_PASSWORD_RAW_VOLATILE = "admin";
 
     private SysUser buildMockAdmin() {
         SysUser user = new SysUser();

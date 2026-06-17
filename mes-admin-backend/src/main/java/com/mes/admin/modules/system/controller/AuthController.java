@@ -1,6 +1,7 @@
 package com.mes.admin.modules.system.controller;
 
 import com.mes.admin.common.result.Result;
+import com.mes.admin.modules.system.dto.ChangePasswordDTO;
 import com.mes.admin.modules.system.dto.LoginDTO;
 import com.mes.admin.modules.system.dto.LoginRespDTO;
 import com.mes.admin.modules.system.dto.UserInfoDTO;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,5 +44,15 @@ public class AuthController {
     @GetMapping("/getInfo")
     public Result<UserInfoDTO> getInfo() {
         return Result.success(sysUserService.getUserInfo());
+    }
+
+    /**
+     * 修改密码
+     * 前端右上角下拉菜单 → 修改密码
+     */
+    @PostMapping("/change-password")
+    public Result<Void> changePassword(@Valid @RequestBody ChangePasswordDTO dto) {
+        sysUserService.changePassword(dto.getOldPassword(), dto.getNewPassword());
+        return Result.success();
     }
 }

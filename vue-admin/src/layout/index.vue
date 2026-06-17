@@ -79,10 +79,54 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                <el-dropdown-item command="change-password">
+                  <el-icon><Key /></el-icon> 修改密码
+                </el-dropdown-item>
+                <el-dropdown-item divided command="logout">
+                  <el-icon><SwitchButton /></el-icon> 退出登录
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+
+          <!-- 修改密码弹窗 -->
+          <el-dialog v-model="pwdDialogVisible" title="修改密码" width="480px" @closed="resetPwdForm">
+            <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdRules" label-width="100px">
+              <el-form-item label="原密码" prop="oldPassword">
+                <el-input
+                  v-model="pwdForm.oldPassword"
+                  type="password"
+                  show-password
+                  placeholder="请输入原密码"
+                  autocomplete="current-password"
+                />
+              </el-form-item>
+              <el-form-item label="新密码" prop="newPassword">
+                <el-input
+                  v-model="pwdForm.newPassword"
+                  type="password"
+                  show-password
+                  placeholder="请输入新密码（6-20 位）"
+                  autocomplete="new-password"
+                />
+              </el-form-item>
+              <el-form-item label="确认密码" prop="confirmPassword">
+                <el-input
+                  v-model="pwdForm.confirmPassword"
+                  type="password"
+                  show-password
+                  placeholder="请再次输入新密码"
+                  autocomplete="new-password"
+                />
+              </el-form-item>
+            </el-form>
+            <template #footer>
+              <el-button @click="pwdDialogVisible = false">取消</el-button>
+              <el-button type="primary" :loading="pwdSubmitting" @click="handleSubmitPwd">
+                确认修改
+              </el-button>
+            </template>
+          </el-dialog>
         </div>
       </div>
 
@@ -98,7 +142,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { constantRoutes } from '@/router'
@@ -113,12 +157,43 @@ const menuRoutes = computed(() => constantRoutes.filter((r) => !r.hidden))
 const activeMenu = computed(() => route.path)
 const breadcrumbs = computed(() => route.matched.filter((m) => m.meta?.title))
 
+// 修改密码相关
+const pwdDialogVisible = ref(false)
+const pwdSubmitting = ref(false)
+const pwdFormRef = ref(null)
+const pwdForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+const validateConfirmPwd = (rule, value, callback) => {
+  if (!value) return callback(new Error('请再次输入新密码'))
+  if (value !== pwdForm.newPassword) return callback(new Error('两次输入的密码不一致'))
+  callback()
+}
+const pwdRules = {
+  oldPassword: [
+    { required: true, message: '请输入原密码', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 20, message: '密码长度 6-20 位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, validator: validateConfirmPwd, trigger: 'blur' }
+  ]
+}
+
 function resolvePath(parent, child) {
   if (child.startsWith('/')) return child
   return (parent.endsWith('/') ? parent : parent + '/') + child
 }
 
 async function handleCommand(command) {
+  if (command === 'change-password') {
+    pwdDialogVisible.value = true
+    return
+  }
   if (command === 'logout') {
     await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
       confirmButtonText: '确定',
@@ -130,6 +205,36 @@ async function handleCommand(command) {
       router.push('/login')
     }).catch(() => {})
   }
+}
+
+function resetPwdForm() {
+  pwdFormRef.value?.resetFields()
+  pwdForm.oldPassword = ''
+  pwdForm.newPassword = ''
+  pwdForm.confirmPassword = ''
+}
+
+async function handleSubmitPwd() {
+  if (!pwdFormRef.value) return
+  await pwdFormRef.value.validate(async (valid) => {
+    if (!valid) return
+    try {
+      pwdSubmitting.value = true
+      await userStore.changePassword({
+        oldPassword: pwdForm.oldPassword,
+        newPassword: pwdForm.newPassword
+      })
+      ElMessage.success('密码修改成功，请重新登录')
+      pwdDialogVisible.value = false
+      // 密码修改后强制重新登录
+      await userStore.logout()
+      router.push('/login')
+    } catch (e) {
+      // userStore.changePassword 内部已做提示，这里只拦截异常
+    } finally {
+      pwdSubmitting.value = false
+    }
+  })
 }
 </script>
 
