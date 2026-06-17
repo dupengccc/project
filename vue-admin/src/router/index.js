@@ -44,6 +44,12 @@ export const constantRoutes = [
         name: 'SystemMenu',
         component: () => import('@/views/system/menu/index.vue'),
         meta: { title: '菜单管理', icon: 'Menu' }
+      },
+      {
+        path: 'org',
+        name: 'SystemOrg',
+        component: () => import('@/views/system/org/index.vue'),
+        meta: { title: '组织管理', icon: 'OfficeBuilding' }
       }
     ]
   },
