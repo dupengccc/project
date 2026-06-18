@@ -300,6 +300,12 @@ export const constantRoutes = [
         name: 'SystemLoginLog',
         component: () => import('@/views/system/login-log/index.vue'),
         meta: { title: '登录日志', icon: 'Document' }
+      },
+      {
+        path: 'oper-log',
+        name: 'SystemOperLog',
+        component: () => import('@/views/system/oper-log/index.vue'),
+        meta: { title: '操作日志', icon: 'Notebook' }
       }
     ]
   },

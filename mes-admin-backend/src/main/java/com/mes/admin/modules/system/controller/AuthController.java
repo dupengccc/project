@@ -30,19 +30,23 @@ public class AuthController {
     @Autowired
     private SysLoginLogService sysLoginLogService;
 
+    @Autowired
+    private SysOperLogService sysOperLogService;
+
     /** 当前登录的日志ID（简单方案：以 ThreadLocal 存储 id 写入；真实环境可通过 Redis 维护 token -> logId） */
     private static final java.util.Map<String, Long> LOGIN_LOG_ID_MAP = new java.util.concurrent.ConcurrentHashMap<>();
 
     @PostMapping("/login")
     public Result<Map<String, Object>> login(@RequestBody LoginDTO dto) {
         Long logId = null;
+        String ip = getCurrentIp();
         try {
             LoginRespDTO resp = sysUserService.login(dto);
             UserInfoDTO info = sysUserService.getUserInfo();
             logId = sysLoginLogService.logLogin(
                     dto.getUsername(),
                     info.getNickname() != null ? info.getNickname() : dto.getUsername(),
-                    getCurrentIp(),
+                    ip,
                     info.getOrgId(),
                     info.getOrgName(),
                     0,
@@ -51,6 +55,9 @@ public class AuthController {
             if (resp.getToken() != null) {
                 LOGIN_LOG_ID_MAP.put(resp.getToken(), logId);
             }
+            // 操作日志：登录成功
+            sysOperLogService.record(dto.getUsername(), info.getNickname(), info.getOrgName(),
+                    "系统管理", "登录", "/auth/login", ip, 0, null);
             Map<String, Object> data = new HashMap<>();
             data.put("token", resp.getToken());
             data.put("tokenType", resp.getTokenType());
@@ -60,8 +67,11 @@ public class AuthController {
             return Result.success(data);
         } catch (Exception ex) {
             sysLoginLogService.logLogin(
-                    dto.getUsername(), dto.getUsername(), getCurrentIp(),
+                    dto.getUsername(), dto.getUsername(), ip,
                     null, null, 1, ex.getMessage() == null ? "登录失败" : ex.getMessage());
+            // 操作日志：登录失败
+            sysOperLogService.record(dto.getUsername(), dto.getUsername(), null,
+                    "系统管理", "登录", "/auth/login", ip, 1, ex.getMessage());
             throw ex;
         }
     }
@@ -69,11 +79,25 @@ public class AuthController {
     @PostMapping("/logout")
     public Result<Void> logout() {
         // 从请求头中读取 Bearer token，匹配到对应登录日志并更新退出时间
+        String ip = getCurrentIp();
+        String username = null;
+        String nickname = null;
+        String orgName = null;
+        try {
+            UserInfoDTO info = sysUserService.getUserInfo();
+            if (info != null) {
+                username = info.getUsername();
+                nickname = info.getNickname();
+                orgName = info.getOrgName();
+            }
+        } catch (Exception ignored) {}
         try {
             String token = extractToken();
             Long logId = token != null ? LOGIN_LOG_ID_MAP.remove(token) : null;
-            sysLoginLogService.logLogout(logId, null);
+            sysLoginLogService.logLogout(logId, username);
         } catch (Exception ignored) {}
+        sysOperLogService.record(username, nickname, orgName,
+                "系统管理", "退出登录", "/auth/logout", ip, 0, null);
         return Result.success();
     }
 
@@ -121,7 +145,27 @@ public class AuthController {
      */
     @PostMapping("/change-password")
     public Result<Void> changePassword(@Valid @RequestBody ChangePasswordDTO dto) {
-        sysUserService.changePassword(dto.getOldPassword(), dto.getNewPassword());
-        return Result.success();
+        String ip = getCurrentIp();
+        String username = null;
+        String nickname = null;
+        String orgName = null;
+        try {
+            UserInfoDTO info = sysUserService.getUserInfo();
+            if (info != null) {
+                username = info.getUsername();
+                nickname = info.getNickname();
+                orgName = info.getOrgName();
+            }
+        } catch (Exception ignored) {}
+        try {
+            sysUserService.changePassword(dto.getOldPassword(), dto.getNewPassword());
+            sysOperLogService.record(username, nickname, orgName,
+                    "系统管理", "修改密码", "/auth/change-password", ip, 0, null);
+            return Result.success();
+        } catch (Exception ex) {
+            sysOperLogService.record(username, nickname, orgName,
+                    "系统管理", "修改密码", "/auth/change-password", ip, 1, ex.getMessage());
+            throw ex;
+        }
     }
 }

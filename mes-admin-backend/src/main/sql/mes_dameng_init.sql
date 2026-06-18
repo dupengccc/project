@@ -143,6 +143,34 @@ CREATE INDEX idx_sys_login_log_empno ON sys_login_log(emp_no);
 CREATE INDEX idx_sys_login_log_time ON sys_login_log(login_time);
 CREATE INDEX idx_sys_login_log_status ON sys_login_log(status);
 
+-- 操作日志表
+CREATE TABLE sys_oper_log (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    emp_no VARCHAR(64),
+    name VARCHAR(128),
+    org_id BIGINT,
+    org_name VARCHAR(128),
+    module VARCHAR(128),
+    operation VARCHAR(128),
+    method VARCHAR(255),
+    request_method VARCHAR(16),
+    url VARCHAR(255),
+    params TEXT,
+    ip VARCHAR(64),
+    location VARCHAR(255),
+    oper_time DATETIME,
+    cost BIGINT,
+    status INT DEFAULT 0,
+    error_msg TEXT,
+    create_time DATETIME DEFAULT SYSDATE,
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_sys_oper_log_empno ON sys_oper_log(emp_no);
+CREATE INDEX idx_sys_oper_log_time ON sys_oper_log(oper_time);
+CREATE INDEX idx_sys_oper_log_status ON sys_oper_log(status);
+CREATE INDEX idx_sys_oper_log_module ON sys_oper_log(module);
+
 -- =====================================================================
 -- 基础数据模块 (MES-MD) - 8 张表
 -- =====================================================================
