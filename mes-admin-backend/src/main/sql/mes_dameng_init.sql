@@ -119,6 +119,30 @@ CREATE TABLE sys_menu (
     PRIMARY KEY (id)
 );
 
+-- 登录日志表
+CREATE TABLE sys_login_log (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    emp_no VARCHAR(64),
+    name VARCHAR(128),
+    login_ip VARCHAR(64),
+    login_location VARCHAR(255),
+    browser VARCHAR(255),
+    os VARCHAR(128),
+    login_time DATETIME,
+    logout_time DATETIME,
+    status INT DEFAULT 0,
+    msg VARCHAR(512),
+    org_id BIGINT,
+    org_name VARCHAR(128),
+    create_time DATETIME DEFAULT SYSDATE,
+    update_time DATETIME,
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_sys_login_log_empno ON sys_login_log(emp_no);
+CREATE INDEX idx_sys_login_log_time ON sys_login_log(login_time);
+CREATE INDEX idx_sys_login_log_status ON sys_login_log(status);
+
 -- =====================================================================
 -- 基础数据模块 (MES-MD) - 8 张表
 -- =====================================================================
@@ -714,5 +738,5 @@ INSERT INTO sys_dict_data (id, dict_sort, dict_label, dict_value, dict_type, lis
 COMMIT;
 
 PRINT 'MES 系统数据库初始化完成！';
-PRINT '表总数: 30 张';
+PRINT '表总数: 31 张';
 PRINT '默认登录账号: admin / admin';

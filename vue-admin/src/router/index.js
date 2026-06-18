@@ -294,6 +294,12 @@ export const constantRoutes = [
         name: 'SystemOrg',
         component: () => import('@/views/system/org/index.vue'),
         meta: { title: '组织管理', icon: 'OfficeBuilding' }
+      },
+      {
+        path: 'login-log',
+        name: 'SystemLoginLog',
+        component: () => import('@/views/system/login-log/index.vue'),
+        meta: { title: '登录日志', icon: 'Document' }
       }
     ]
   },
