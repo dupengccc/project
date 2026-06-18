@@ -4,7 +4,9 @@ import com.mes.admin.common.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * 生产单元实体
@@ -14,10 +16,6 @@ import javax.persistence.*;
 @Entity
 @Table(name = "sys_production_unit")
 public class SysProductionUnit extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     /** 生产单元编码 */
     @Column(length = 64, unique = true)
@@ -43,8 +41,4 @@ public class SysProductionUnit extends BaseEntity {
 
     /** 排序号 */
     private Integer sort;
-
-    /** 备注 */
-    @Column(length = 500)
-    private String remark;
 }

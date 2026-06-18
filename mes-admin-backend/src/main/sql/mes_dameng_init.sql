@@ -4,8 +4,8 @@
 -- 生成日期: 2026-06-17
 -- 执行用户: SYSDBA (具有创建表/序列权限)
 -- =====================================================================
--- 说明：达梦数据库 Dm8 语法与 Oracle 类似，主键使用 IDENTITY
---       或 SEQUENCE + TRIGGER 方式生成
+-- 说明：达梦数据库 Dm8 语法与 Oracle 类似，主键使用 NUMBER(20)
+--       ID 由后端 IdGenerator 自动生成（年月日时分毫秒+序号）
 -- =====================================================================
 
 -- =====================================================================
@@ -14,7 +14,7 @@
 
 -- 用户表
 CREATE TABLE sys_user (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     username VARCHAR(64) NOT NULL,
     password VARCHAR(255) NOT NULL,
     nickname VARCHAR(64),
@@ -39,7 +39,7 @@ CREATE UNIQUE INDEX idx_sys_user_username ON sys_user(username);
 
 -- 组织/部门表
 CREATE TABLE sys_org (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     parent_id BIGINT DEFAULT 0,
     org_code VARCHAR(64),
     name VARCHAR(128) NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE sys_org (
 
 -- 字典数据
 CREATE TABLE sys_dict_data (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     dict_sort INT DEFAULT 0,
     dict_label VARCHAR(128),
     dict_value VARCHAR(128),
@@ -81,7 +81,7 @@ CREATE INDEX idx_sys_dict_type ON sys_dict_data(dict_type);
 
 -- 数据字典表（父子层级结构）
 CREATE TABLE sys_dict (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     dict_name VARCHAR(128),
     dict_code VARCHAR(128),
     parent_id BIGINT DEFAULT 0,
@@ -103,7 +103,7 @@ CREATE UNIQUE INDEX idx_sys_dict_code ON sys_dict(dict_code);
 
 -- 角色表
 CREATE TABLE sys_role (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     role_name VARCHAR(64),
     role_key VARCHAR(64),
     role_sort INT DEFAULT 0,
@@ -119,7 +119,7 @@ CREATE TABLE sys_role (
 
 -- 角色-组织 关联表（用于"自定义数据范围"）
 CREATE TABLE sys_role_dept (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     role_id BIGINT NOT NULL,
     dept_id BIGINT NOT NULL,
     PRIMARY KEY (id)
@@ -129,7 +129,7 @@ CREATE INDEX idx_sys_role_dept_dept ON sys_role_dept(dept_id);
 
 -- 角色-物料 关联表（用于物料数据权限）
 CREATE TABLE sys_role_material (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     role_id BIGINT NOT NULL,
     material_id BIGINT NOT NULL,
     material_code VARCHAR(64),
@@ -141,7 +141,7 @@ CREATE INDEX idx_sys_role_material_material ON sys_role_material(material_id);
 
 -- 生产单元表
 CREATE TABLE sys_production_unit (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     unit_code VARCHAR(64) UNIQUE,
     unit_name VARCHAR(128),
     unit_type VARCHAR(32),
@@ -161,7 +161,7 @@ CREATE INDEX idx_sys_production_unit_code ON sys_production_unit(unit_code);
 
 -- 菜单表
 CREATE TABLE sys_menu (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     parent_id BIGINT DEFAULT 0,
     menu_name VARCHAR(128),
     path VARCHAR(255),
@@ -186,7 +186,7 @@ CREATE TABLE sys_menu (
 
 -- 登录日志表
 CREATE TABLE sys_login_log (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     emp_no VARCHAR(64),
     name VARCHAR(128),
     login_ip VARCHAR(64),
@@ -210,7 +210,7 @@ CREATE INDEX idx_sys_login_log_status ON sys_login_log(status);
 
 -- 操作日志表
 CREATE TABLE sys_oper_log (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     emp_no VARCHAR(64),
     name VARCHAR(128),
     org_id BIGINT,
@@ -241,7 +241,7 @@ CREATE INDEX idx_sys_oper_log_module ON sys_oper_log(module);
 -- =====================================================================
 
 CREATE TABLE mes_md_material (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     material_code VARCHAR(64),
     material_name VARCHAR(128),
     spec VARCHAR(255),
@@ -265,7 +265,7 @@ CREATE INDEX idx_mes_md_material_type ON mes_md_material(material_type);
 CREATE INDEX idx_mes_md_material_org ON mes_md_material(org_id);
 
 CREATE TABLE mes_md_customer (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     customer_code VARCHAR(64),
     customer_name VARCHAR(128),
     contact VARCHAR(64),
@@ -282,7 +282,7 @@ CREATE TABLE mes_md_customer (
 );
 
 CREATE TABLE mes_md_vendor (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     vendor_code VARCHAR(64),
     vendor_name VARCHAR(128),
     contact VARCHAR(64),
@@ -299,7 +299,7 @@ CREATE TABLE mes_md_vendor (
 );
 
 CREATE TABLE mes_md_workshop (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     workshop_code VARCHAR(64),
     workshop_name VARCHAR(128),
     leader VARCHAR(64),
@@ -315,7 +315,7 @@ CREATE TABLE mes_md_workshop (
 );
 
 CREATE TABLE mes_md_workstation (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     station_code VARCHAR(64),
     station_name VARCHAR(128),
     workshop_id BIGINT,
@@ -332,7 +332,7 @@ CREATE TABLE mes_md_workstation (
 );
 
 CREATE TABLE mes_md_process (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     process_code VARCHAR(64),
     process_name VARCHAR(128),
     process_type VARCHAR(32),
@@ -347,7 +347,7 @@ CREATE TABLE mes_md_process (
 );
 
 CREATE TABLE mes_md_route (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     route_code VARCHAR(64),
     route_name VARCHAR(128),
     product_name VARCHAR(128),
@@ -363,7 +363,7 @@ CREATE TABLE mes_md_route (
 );
 
 CREATE TABLE mes_md_bom (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     bom_code VARCHAR(64),
     bom_name VARCHAR(128),
     product_name VARCHAR(128),
@@ -382,7 +382,7 @@ CREATE TABLE mes_md_bom (
 -- =====================================================================
 
 CREATE TABLE mes_pro_workorder (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     order_code VARCHAR(64),
     product_name VARCHAR(128),
     plan_qty DECIMAL(18,2),
@@ -406,7 +406,7 @@ CREATE TABLE mes_pro_workorder (
 );
 
 CREATE TABLE mes_pro_schedule (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     schedule_code VARCHAR(64),
     order_code VARCHAR(64),
     product_name VARCHAR(128),
@@ -425,7 +425,7 @@ CREATE TABLE mes_pro_schedule (
 );
 
 CREATE TABLE mes_pro_report (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     report_code VARCHAR(64),
     order_code VARCHAR(64),
     product_name VARCHAR(128),
@@ -448,7 +448,7 @@ CREATE TABLE mes_pro_report (
 -- =====================================================================
 
 CREATE TABLE mes_wm_warehouse (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     warehouse_code VARCHAR(64),
     warehouse_name VARCHAR(128),
     warehouse_type VARCHAR(32),
@@ -465,7 +465,7 @@ CREATE TABLE mes_wm_warehouse (
 );
 
 CREATE TABLE mes_wm_area (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     area_code VARCHAR(64),
     area_name VARCHAR(128),
     warehouse_id BIGINT,
@@ -482,7 +482,7 @@ CREATE TABLE mes_wm_area (
 );
 
 CREATE TABLE mes_wm_location (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     location_code VARCHAR(64),
     location_name VARCHAR(128),
     warehouse_id BIGINT,
@@ -501,7 +501,7 @@ CREATE TABLE mes_wm_location (
 );
 
 CREATE TABLE mes_wm_stock (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     material_code VARCHAR(64),
     material_name VARCHAR(128),
     spec VARCHAR(255),
@@ -521,7 +521,7 @@ CREATE TABLE mes_wm_stock (
 );
 
 CREATE TABLE mes_wm_in (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     in_code VARCHAR(64),
     material_name VARCHAR(128),
     in_qty DECIMAL(18,2),
@@ -540,7 +540,7 @@ CREATE TABLE mes_wm_in (
 );
 
 CREATE TABLE mes_wm_out (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     out_code VARCHAR(64),
     material_name VARCHAR(128),
     out_qty DECIMAL(18,2),
@@ -563,7 +563,7 @@ CREATE TABLE mes_wm_out (
 -- =====================================================================
 
 CREATE TABLE mes_qc_defect (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     defect_code VARCHAR(64),
     defect_name VARCHAR(128),
     defect_type VARCHAR(32),
@@ -579,7 +579,7 @@ CREATE TABLE mes_qc_defect (
 );
 
 CREATE TABLE mes_qc_template (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     template_code VARCHAR(64),
     template_name VARCHAR(128),
     product_type VARCHAR(128),
@@ -595,7 +595,7 @@ CREATE TABLE mes_qc_template (
 );
 
 CREATE TABLE mes_qc_record (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     record_code VARCHAR(64),
     product_name VARCHAR(128),
     check_qty DECIMAL(18,2),
@@ -619,7 +619,7 @@ CREATE TABLE mes_qc_record (
 -- =====================================================================
 
 CREATE TABLE mes_dv_device (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     device_code VARCHAR(64),
     device_name VARCHAR(128),
     device_type VARCHAR(64),
@@ -639,7 +639,7 @@ CREATE TABLE mes_dv_device (
 );
 
 CREATE TABLE mes_dv_check (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     check_code VARCHAR(64),
     device_code VARCHAR(64),
     device_name VARCHAR(128),
@@ -658,7 +658,7 @@ CREATE TABLE mes_dv_check (
 );
 
 CREATE TABLE mes_dv_repair (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     repair_code VARCHAR(64),
     device_code VARCHAR(64),
     device_name VARCHAR(128),
@@ -683,7 +683,7 @@ CREATE TABLE mes_dv_repair (
 -- =====================================================================
 
 CREATE TABLE mes_tm_tool (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     tool_code VARCHAR(64),
     tool_name VARCHAR(128),
     tool_type VARCHAR(32),
@@ -706,7 +706,7 @@ CREATE TABLE mes_tm_tool (
 -- =====================================================================
 
 CREATE TABLE mes_cal_team (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     team_code VARCHAR(64),
     team_name VARCHAR(128),
     leader VARCHAR(64),
@@ -722,7 +722,7 @@ CREATE TABLE mes_cal_team (
 );
 
 CREATE TABLE mes_cal_shift (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     shift_code VARCHAR(64),
     shift_name VARCHAR(128),
     start_time VARCHAR(16),
@@ -739,7 +739,7 @@ CREATE TABLE mes_cal_shift (
 );
 
 CREATE TABLE mes_cal_plan (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     plan_code VARCHAR(64),
     team_name VARCHAR(128),
     plan_date DATETIME,
@@ -756,7 +756,7 @@ CREATE TABLE mes_cal_plan (
 );
 
 CREATE TABLE mes_cal_calendar (
-    id BIGINT IDENTITY(1,1) NOT NULL,
+    id NUMBER(20) NOT NULL,
     calendar_code VARCHAR(64),
     calendar_date DATETIME,
     team_name VARCHAR(128),

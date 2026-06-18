@@ -1,29 +1,21 @@
 package com.mes.admin.modules.system.entity;
 
+import com.mes.admin.common.entity.BaseEntity;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
-import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * 数据字典（父子层级结构）
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_dict")
-public class SysDict {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class SysDict extends BaseEntity {
 
     /** 字典名称 */
     @Column(length = 128)
@@ -47,24 +39,6 @@ public class SysDict {
     /** 排序号 */
     private Integer sort;
 
-    /** 备注 */
-    @Column(length = 512)
-    private String remark;
-
     /** 状态 0=激活 1=停用 */
     private Integer status;
-
-    /** 创建人 */
-    @Column(length = 64)
-    private String createBy;
-
-    /** 创建时间 */
-    private Date createTime;
-
-    /** 更新人 */
-    @Column(length = 64)
-    private String updateBy;
-
-    /** 更新时间 */
-    private Date updateTime;
 }

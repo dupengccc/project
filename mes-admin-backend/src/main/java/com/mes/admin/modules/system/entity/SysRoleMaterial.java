@@ -1,27 +1,21 @@
 package com.mes.admin.modules.system.entity;
 
+import com.mes.admin.common.entity.BaseEntity;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * 角色-物料 关联表
- * 用于数据权限中控制角色可访问的物料范围
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_role_material")
-public class SysRoleMaterial {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class SysRoleMaterial extends BaseEntity {
 
     /** 角色ID */
     private Long roleId;

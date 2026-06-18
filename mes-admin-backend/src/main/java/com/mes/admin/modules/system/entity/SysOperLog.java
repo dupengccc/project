@@ -1,29 +1,22 @@
 package com.mes.admin.modules.system.entity;
 
+import com.mes.admin.common.entity.BaseEntity;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 
 /**
  * 操作日志
- * 记录用户工号、姓名、模块、操作、创建时间、是否正常、异常信息等
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_oper_log")
-public class SysOperLog {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class SysOperLog extends BaseEntity {
 
     /** 工号（用户账号） */
     @Column(length = 64)
@@ -84,7 +77,4 @@ public class SysOperLog {
     /** 异常信息 */
     @Column(columnDefinition = "TEXT")
     private String errorMsg;
-
-    /** 创建时间 */
-    private Date createTime;
 }

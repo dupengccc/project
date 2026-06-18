@@ -6,9 +6,6 @@ import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
@@ -17,10 +14,6 @@ import java.util.Date;
 @Entity
 @Table(name = "sys_user")
 public class SysUser extends BaseEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
     @Column(length = 64, unique = true)
     private String username;
