@@ -306,6 +306,12 @@ export const constantRoutes = [
         name: 'SystemOperLog',
         component: () => import('@/views/system/oper-log/index.vue'),
         meta: { title: '操作日志', icon: 'Notebook' }
+      },
+      {
+        path: 'dict',
+        name: 'SystemDict',
+        component: () => import('@/views/system/dict/index.vue'),
+        meta: { title: '字典管理', icon: 'Collection' }
       }
     ]
   },

@@ -79,6 +79,28 @@ CREATE TABLE sys_dict_data (
 
 CREATE INDEX idx_sys_dict_type ON sys_dict_data(dict_type);
 
+-- 数据字典表（父子层级结构）
+CREATE TABLE sys_dict (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    dict_name VARCHAR(128),
+    dict_code VARCHAR(128),
+    parent_id BIGINT DEFAULT 0,
+    parent_code VARCHAR(128),
+    dict_value VARCHAR(128),
+    sort INT DEFAULT 0,
+    remark VARCHAR(512),
+    status INT DEFAULT 0,
+    create_by VARCHAR(64),
+    create_time DATETIME DEFAULT SYSDATE,
+    update_by VARCHAR(64),
+    update_time DATETIME,
+    PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_sys_dict_parent_id ON sys_dict(parent_id);
+CREATE INDEX idx_sys_dict_parent_code ON sys_dict(parent_code);
+CREATE UNIQUE INDEX idx_sys_dict_code ON sys_dict(dict_code);
+
 -- 角色表
 CREATE TABLE sys_role (
     id BIGINT IDENTITY(1,1) NOT NULL,
@@ -763,8 +785,26 @@ INSERT INTO sys_dict_data (id, dict_sort, dict_label, dict_value, dict_type, lis
 (27, 2, '停机', '1', 'device_status', 'warning', 0),
 (28, 3, '维修', '2', 'device_status', 'danger', 0);
 
+-- 4. 数据字典（父子层级结构）
+INSERT INTO sys_dict (id, dict_name, dict_code, parent_id, parent_code, dict_value, sort, remark, status, create_time) VALUES
+-- 根节点：分公司
+(1, '分公司', 'DICT_BRANCH', 0, NULL, '1', 1, 'MES 分公司目录', 0, SYSDATE),
+(2, '华东分公司', 'BRANCH_HD', 1, 'DICT_BRANCH', '1', 1, '华东区域', 0, SYSDATE),
+(3, '华南分公司', 'BRANCH_HN', 1, 'DICT_BRANCH', '2', 2, '华南区域', 0, SYSDATE),
+(4, '华北分公司', 'BRANCH_HB', 1, 'DICT_BRANCH', '3', 3, '华北区域', 0, SYSDATE),
+(5, '西南分公司', 'BRANCH_XN', 1, 'DICT_BRANCH', '4', 4, '西南区域', 0, SYSDATE),
+-- 根节点：用户状态
+(10, '用户状态', 'DICT_USER_STATUS', 0, NULL, '10', 2, '用户状态字典', 0, SYSDATE),
+(11, '启用', 'USER_STATUS_ON', 10, 'DICT_USER_STATUS', '0', 1, NULL, 0, SYSDATE),
+(12, '禁用', 'USER_STATUS_OFF', 10, 'DICT_USER_STATUS', '1', 2, NULL, 0, SYSDATE),
+-- 根节点：组织类型
+(20, '组织类型', 'DICT_ORG_TYPE', 0, NULL, '20', 3, '组织类型字典', 0, SYSDATE),
+(21, '集团', 'ORG_GROUP', 20, 'DICT_ORG_TYPE', 'group', 1, NULL, 0, SYSDATE),
+(22, '分公司', 'ORG_BRANCH', 20, 'DICT_ORG_TYPE', 'branch', 2, NULL, 0, SYSDATE),
+(23, '部门', 'ORG_DEPT', 20, 'DICT_ORG_TYPE', 'dept', 3, NULL, 0, SYSDATE);
+
 COMMIT;
 
 PRINT 'MES 系统数据库初始化完成！';
-PRINT '表总数: 31 张';
+PRINT '表总数: 32 张';
 PRINT '默认登录账号: admin / admin';

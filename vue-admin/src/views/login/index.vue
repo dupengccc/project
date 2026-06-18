@@ -114,6 +114,7 @@ import { reactive, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
+import { getDictChildren } from '@/api/dict'
 
 const router = useRouter()
 const route = useRoute()
@@ -133,13 +134,33 @@ const bgImages = [
 const currentBg = ref(0)
 let bgTimer = null
 
-// 模拟分公司列表
-const branchList = [
-  { id: 1, name: '华东分公司', code: 'HD001' },
-  { id: 2, name: '华南分公司', code: 'HN002' },
-  { id: 3, name: '华北分公司', code: 'HB003' },
-  { id: 4, name: '西南分公司', code: 'XN004' }
-]
+// 模拟分公司列表（字典未就绪时兜底）
+const branchList = ref([
+  { id: 1, name: '华东分公司', code: 'BRANCH_HD' },
+  { id: 2, name: '华南分公司', code: 'BRANCH_HN' },
+  { id: 3, name: '华北分公司', code: 'BRANCH_HB' },
+  { id: 4, name: '西南分公司', code: 'BRANCH_XN' }
+])
+
+// 从字典动态加载分公司列表
+async function loadBranchList() {
+  try {
+    const res = await getDictChildren('DICT_BRANCH')
+    if (res && res.data && res.data.length > 0) {
+      branchList.value = res.data.map(d => ({
+        id: d.id,
+        name: d.dictName,
+        code: d.dictCode
+      }))
+      // 默认选中第一个
+      if (!loginForm.branchId) {
+        loginForm.branchId = branchList.value[0]?.id
+      }
+    }
+  } catch (e) {
+    // 后端未就绪，使用模拟数据
+  }
+}
 
 // 读取本地记住的账号
 function loadRemember() {
@@ -231,6 +252,7 @@ async function handleLogin() {
 }
 
 onMounted(() => {
+  loadBranchList()
   loadRemember()
   startBgCarousel()
 })
