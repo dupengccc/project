@@ -20,9 +20,6 @@ public class SysDataScopeController {
     @Autowired
     private SysDataScopeService dataScopeService;
 
-    /**
-     * 角色列表（数据权限管理主列表）
-     */
     @GetMapping("/role-list")
     public Result<Map<String, Object>> roleList(
             @RequestParam(required = false) String roleName,
@@ -38,22 +35,22 @@ public class SysDataScopeController {
     }
 
     /**
-     * 获取单个角色的数据范围配置
-     * 返回 { role, deptIds:[...] }
+     * 获取单个角色的数据范围配置（包含组织和物料）
      */
     @GetMapping("/role/{roleId}")
     public Result<Map<String, Object>> getRoleDataScope(@PathVariable Long roleId) {
         SysRole role = dataScopeService.findRoleById(roleId);
         List<Long> deptIds = dataScopeService.findDeptIdsByRoleId(roleId);
+        List<Long> materialIds = dataScopeService.findMaterialIdsByRoleId(roleId);
         Map<String, Object> data = new HashMap<>();
         data.put("role", role);
         data.put("deptIds", deptIds);
+        data.put("materialIds", materialIds);
         return Result.success(data);
     }
 
     /**
-     * 分配数据权限
-     * body: { roleId, dataScope, deptIds:[] }
+     * 分配组织数据权限
      */
     @PostMapping("/assign")
     public Result<Void> assign(@RequestBody Map<String, Object> body) {
@@ -63,6 +60,19 @@ public class SysDataScopeController {
         @SuppressWarnings("unchecked")
         List<Long> deptIds = (List<Long>) body.get("deptIds");
         dataScopeService.assignDataScope(roleId, dataScope, deptIds);
+        return Result.success();
+    }
+
+    /**
+     * 分配物料数据权限
+     */
+    @PostMapping("/assign-material")
+    public Result<Void> assignMaterial(@RequestBody Map<String, Object> body) {
+        Number roleIdNum = body.get("roleId") != null ? ((Number) body.get("roleId")) : null;
+        Long roleId = roleIdNum != null ? roleIdNum.longValue() : null;
+        @SuppressWarnings("unchecked")
+        List<Long> materialIds = (List<Long>) body.get("materialIds");
+        dataScopeService.assignMaterialScope(roleId, materialIds);
         return Result.success();
     }
 
@@ -84,10 +94,19 @@ public class SysDataScopeController {
     }
 
     /**
-     * 获取组织树（用于自定义范围弹窗）
+     * 获取组织树
      */
     @GetMapping("/org-tree")
     public Result<List<Map<String, Object>>> orgTree() {
         return Result.success(dataScopeService.findOrgTree());
+    }
+
+    /**
+     * 获取物料列表（支持按类型过滤）
+     */
+    @GetMapping("/materials")
+    public Result<List<Map<String, Object>>> materials(
+            @RequestParam(required = false) String materialType) {
+        return Result.success(dataScopeService.findMaterials(materialType));
     }
 }

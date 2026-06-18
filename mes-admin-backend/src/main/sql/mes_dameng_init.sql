@@ -127,6 +127,18 @@ CREATE TABLE sys_role_dept (
 CREATE INDEX idx_sys_role_dept_role ON sys_role_dept(role_id);
 CREATE INDEX idx_sys_role_dept_dept ON sys_role_dept(dept_id);
 
+-- 角色-物料 关联表（用于物料数据权限）
+CREATE TABLE sys_role_material (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    role_id BIGINT NOT NULL,
+    material_id BIGINT NOT NULL,
+    material_code VARCHAR(64),
+    material_name VARCHAR(128),
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_sys_role_material_role ON sys_role_material(role_id);
+CREATE INDEX idx_sys_role_material_material ON sys_role_material(material_id);
+
 -- 菜单表
 CREATE TABLE sys_menu (
     id BIGINT IDENTITY(1,1) NOT NULL,

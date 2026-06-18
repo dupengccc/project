@@ -1,6 +1,5 @@
 <template>
   <div class="data-scope-page">
-    <!-- 顶部搜索 -->
     <div class="search-bar">
       <el-form :inline="true" :model="queryForm" @submit.prevent>
         <el-form-item label="角色名称">
@@ -22,7 +21,6 @@
       </el-button>
     </div>
 
-    <!-- 角色列表 -->
     <el-table :data="roleList" border stripe v-loading="loading" height="calc(100vh - 220px)">
       <el-table-column type="index" label="序号" width="60" align="center" />
       <el-table-column prop="roleName" label="角色名称" width="180" />
@@ -40,10 +38,13 @@
         </template>
       </el-table-column>
       <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
-      <el-table-column label="操作" width="220" align="center" fixed="right">
+      <el-table-column label="操作" width="280" align="center" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" size="small" @click="handleAssign(row)">
             分配数据权限
+          </el-button>
+          <el-button link type="primary" size="small" @click="handleAssignMaterial(row)">
+            分配物料权限
           </el-button>
           <el-button link type="primary" size="small" @click="handleEdit(row)">编辑</el-button>
           <el-popconfirm title="确认删除该角色？" @confirm="handleDelete(row)">
@@ -55,7 +56,6 @@
       </el-table-column>
     </el-table>
 
-    <!-- 新增/编辑 弹窗 -->
     <el-dialog v-model="roleDialogVisible" :title="roleDialogMode === 'add' ? '新增角色' : '编辑角色'" width="560px">
       <el-form ref="roleFormRef" :model="roleForm" :rules="roleRules" label-width="90px">
         <el-form-item label="角色名称" prop="roleName">
@@ -83,7 +83,6 @@
       </template>
     </el-dialog>
 
-    <!-- 分配数据权限 弹窗 -->
     <el-dialog v-model="assignVisible" :title="'分配数据权限 - ' + (currentRole?.roleName || '')" width="640px" @closed="resetAssignForm">
       <el-form ref="assignFormRef" :model="assignForm" label-width="110px">
         <el-form-item label="数据范围" prop="dataScope">
@@ -120,6 +119,48 @@
         <el-button type="primary" @click="handleSubmitAssign">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- 分配物料权限弹窗 -->
+    <el-dialog v-model="materialAssignVisible" :title="'分配物料权限 - ' + (currentRole?.roleName || '')" width="800px" @closed="resetMaterialAssignForm">
+      <el-form :model="materialAssignForm" label-width="100px">
+        <el-form-item label="物料类型">
+          <el-select v-model="materialAssignForm.materialType" placeholder="全部" clearable style="width: 160px" @change="loadMaterials">
+            <el-option label="全部" value="" />
+            <el-option label="原材料" value="原材料" />
+            <el-option label="半成品" value="半成品" />
+            <el-option label="成品" value="成品" />
+            <el-option label="辅料" value="辅料" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="物料列表">
+          <div style="max-height: 400px; overflow: auto; border: 1px solid #ebeef5; border-radius: 4px;">
+            <el-table
+              ref="materialTableRef"
+              :data="materialList"
+              border
+              stripe
+              :default-checked-keys="materialAssignForm.materialIds"
+              @selection-change="handleMaterialSelectionChange"
+            >
+              <el-table-column type="selection" width="55" />
+              <el-table-column prop="materialCode" label="物料编码" width="140" />
+              <el-table-column prop="materialName" label="物料名称" width="160" />
+              <el-table-column prop="materialType" label="物料类型" width="100" />
+              <el-table-column prop="spec" label="规格" min-width="150" show-overflow-tooltip />
+              <el-table-column prop="unit" label="单位" width="80" />
+            </el-table>
+          </div>
+          <div style="text-align: right; padding-top: 8px;">
+            <el-button size="small" @click="selectAllMaterials">全选</el-button>
+            <el-button size="small" @click="clearAllMaterials">清空</el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="materialAssignVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleSubmitMaterialAssign">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -128,16 +169,17 @@ import { reactive, ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   listRoles, saveRole, deleteRole,
-  getRoleDataScope, assignDataScope, getOrgTree
+  getRoleDataScope, assignDataScope, getOrgTree,
+  assignMaterialScope, getMaterials
 } from '@/api/data-scope'
 
 const loading = ref(false)
 const roleList = ref([])
 const orgTree = ref([])
+const materialList = ref([])
 
 const queryForm = reactive({ roleName: '', status: null })
 
-// 角色弹窗
 const roleDialogVisible = ref(false)
 const roleDialogMode = ref('add')
 const roleFormRef = ref()
@@ -149,14 +191,16 @@ const roleRules = {
   roleKey: [{ required: true, message: '请输入角色编码', trigger: 'blur' }]
 }
 
-// 分配数据权限弹窗
 const assignVisible = ref(false)
 const assignFormRef = ref()
 const orgTreeRef = ref()
 const currentRole = ref(null)
 const assignForm = reactive({ dataScope: '1', deptIds: [] })
 
-// 数据范围元信息
+const materialAssignVisible = ref(false)
+const materialTableRef = ref()
+const materialAssignForm = reactive({ materialType: '', materialIds: [] })
+
 const scopeMap = {
   '1': { text: '全部数据', type: 'success', tip: '可见所有组织的数据（超级管理员使用）' },
   '2': { text: '自定义数据', type: 'warning', tip: '在下方树形控件中勾选可见的组织节点' },
@@ -168,8 +212,12 @@ function scopeText(s) { return scopeMap[s]?.text || '未设置' }
 function scopeTagType(s) { return scopeMap[s]?.type || '' }
 function scopeTip(s) { return scopeMap[s]?.tip || '' }
 
-// 初始化
 onMounted(async () => {
+  await loadOrgTree()
+  loadRoles()
+})
+
+async function loadOrgTree() {
   try {
     const res = await getOrgTree()
     if (res && res.data && res.data.length > 0) {
@@ -177,7 +225,6 @@ onMounted(async () => {
       return
     }
   } catch (e) {}
-  // 兜底模拟树
   orgTree.value = [
     {
       id: 1, label: 'MES 集团总部', orgCode: 'GROUP001',
@@ -199,8 +246,7 @@ onMounted(async () => {
       ]
     }
   ]
-  loadRoles()
-})
+}
 
 async function loadRoles() {
   loading.value = true
@@ -208,10 +254,10 @@ async function loadRoles() {
     const res = await listRoles({ roleName: queryForm.roleName, status: queryForm.status })
     if (res && res.code === 0 && res.data && Array.isArray(res.data.list) && res.data.list.length > 0) {
       roleList.value = res.data.list
+      loading.value = false
       return
     }
   } catch (e) {}
-  // 模拟数据
   roleList.value = [
     { id: 1, roleName: '超级管理员', roleKey: 'super_admin', roleSort: 1, status: 0, dataScope: '1', remark: '拥有全部数据权限' },
     { id: 2, roleName: '集团管理员', roleKey: 'group_admin', roleSort: 2, status: 0, dataScope: '4', remark: '集团范围内全部数据' },
@@ -223,13 +269,38 @@ async function loadRoles() {
   loading.value = false
 }
 
+async function loadMaterials() {
+  try {
+    const res = await getMaterials({ materialType: materialAssignForm.materialType })
+    if (res && res.code === 0 && res.data && Array.isArray(res.data)) {
+      materialList.value = res.data
+      return
+    }
+  } catch (e) {}
+  let mock = [
+    { id: 1, materialCode: 'M00001', materialName: '不锈钢板', materialType: '原材料', spec: '1220*2440*2mm', unit: '张' },
+    { id: 2, materialCode: 'M00002', materialName: '铝合金型材', materialType: '原材料', spec: '6063-T5 2m', unit: '根' },
+    { id: 3, materialCode: 'M00003', materialName: '碳钢圆棒', materialType: '原材料', spec: '直径20mm', unit: '根' },
+    { id: 4, materialCode: 'B00001', materialName: '半成品装配A', materialType: '半成品', spec: 'A100', unit: '件' },
+    { id: 5, materialCode: 'B00002', materialName: '半成品装配B', materialType: '半成品', spec: 'B200', unit: '件' },
+    { id: 6, materialCode: 'F00001', materialName: '工控机箱', materialType: '成品', spec: 'IPC-610L', unit: '台' },
+    { id: 7, materialCode: 'F00002', materialName: '触控一体机', materialType: '成品', spec: '15寸', unit: '台' },
+    { id: 8, materialCode: 'A00001', materialName: '内六角螺丝', materialType: '辅料', spec: 'M4x8', unit: '包' },
+    { id: 9, materialCode: 'A00002', materialName: '垫片', materialType: '辅料', spec: 'M4', unit: '包' },
+    { id: 10, materialCode: 'A00003', materialName: '螺母', materialType: '辅料', spec: 'M4', unit: '包' }
+  ]
+  if (materialAssignForm.materialType) {
+    mock = mock.filter(m => m.materialType === materialAssignForm.materialType)
+  }
+  materialList.value = mock
+}
+
 function handleReset() {
   queryForm.roleName = ''
   queryForm.status = null
   loadRoles()
 }
 
-// ==== 角色增删改 ====
 function handleAddRole() {
   roleDialogMode.value = 'add'
   Object.assign(roleForm, { id: null, roleName: '', roleKey: '', roleSort: 1, status: 0, remark: '' })
@@ -257,7 +328,6 @@ async function handleSaveRole() {
         return
       }
     } catch (e) {}
-    // 模拟保存成功
     if (roleDialogMode.value === 'add') {
       roleList.value.unshift({ ...roleForm, id: Date.now(), dataScope: '1' })
     } else {
@@ -269,7 +339,6 @@ async function handleSaveRole() {
     }
     ElMessage.success('保存成功')
     roleDialogVisible.value = false
-    loadRoles()
   })
 }
 
@@ -282,17 +351,14 @@ async function handleDelete(row) {
       return
     }
   } catch (e) {}
-  // 模拟删除
   roleList.value = roleList.value.filter(r => r.id !== row.id)
   ElMessage.success('删除成功')
 }
 
-// ==== 分配数据权限 ====
 async function handleAssign(row) {
   currentRole.value = row
   assignForm.dataScope = row.dataScope || '1'
   assignForm.deptIds = []
-  // 若是自定义范围，拉取该角色已有的部门 ID
   if (assignForm.dataScope === '2') {
     try {
       const res = await getRoleDataScope(row.id)
@@ -315,7 +381,6 @@ function resetAssignForm() {
 }
 
 async function handleSubmitAssign() {
-  // 获取树形勾选结果（含半选中父节点）
   let checkedKeys = []
   try {
     if (orgTreeRef.value) {
@@ -326,7 +391,6 @@ async function handleSubmitAssign() {
   } catch (e) {
     checkedKeys = assignForm.deptIds
   }
-  // 非自定义范围时忽略 deptIds
   const finalDeptIds = assignForm.dataScope === '2' ? checkedKeys : []
   const payload = {
     roleId: currentRole.value.id,
@@ -342,13 +406,66 @@ async function handleSubmitAssign() {
       return
     }
   } catch (e) {}
-  // 模拟保存成功：同步角色列表中的 dataScope
   const idx = roleList.value.findIndex(r => r.id === currentRole.value.id)
   if (idx >= 0) {
     roleList.value[idx] = { ...roleList.value[idx], dataScope: assignForm.dataScope }
   }
   ElMessage.success('数据权限已更新')
   assignVisible.value = false
+}
+
+// ==== 物料权限分配 ====
+async function handleAssignMaterial(row) {
+  currentRole.value = row
+  materialAssignForm.materialType = ''
+  materialAssignForm.materialIds = []
+  await loadMaterials()
+  try {
+    const res = await getRoleDataScope(row.id)
+    if (res && res.code === 0 && res.data && res.data.materialIds) {
+      materialAssignForm.materialIds = res.data.materialIds
+    }
+  } catch (e) {}
+  materialAssignVisible.value = true
+}
+
+function handleMaterialSelectionChange(val) {
+  materialAssignForm.materialIds = val.map(item => item.id)
+}
+
+function selectAllMaterials() {
+  if (materialTableRef.value) {
+    materialTableRef.value.toggleAllSelection()
+  }
+}
+
+function clearAllMaterials() {
+  if (materialTableRef.value) {
+    materialTableRef.value.clearSelection()
+  }
+}
+
+function resetMaterialAssignForm() {
+  materialAssignForm.materialType = ''
+  materialAssignForm.materialIds = []
+  currentRole.value = null
+}
+
+async function handleSubmitMaterialAssign() {
+  const payload = {
+    roleId: currentRole.value.id,
+    materialIds: materialAssignForm.materialIds
+  }
+  try {
+    const res = await assignMaterialScope(payload)
+    if (res && res.code === 0) {
+      ElMessage.success('物料权限已更新')
+      materialAssignVisible.value = false
+      return
+    }
+  } catch (e) {}
+  ElMessage.success('物料权限已更新')
+  materialAssignVisible.value = false
 }
 </script>
 

@@ -20,6 +20,14 @@ export function assignDataScope(data) {
   return request({ url: '/system/data-scope/assign', method: 'post', data })
 }
 
+export function assignMaterialScope(data) {
+  return request({ url: '/system/data-scope/assign-material', method: 'post', data })
+}
+
 export function getOrgTree() {
   return request({ url: '/system/data-scope/org-tree', method: 'get' })
+}
+
+export function getMaterials(params) {
+  return request({ url: '/system/data-scope/materials', method: 'get', params })
 }

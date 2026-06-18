@@ -1,10 +1,14 @@
 package com.mes.admin.modules.system.service;
 
+import com.mes.admin.modules.mes.md.entity.MdMaterial;
+import com.mes.admin.modules.mes.md.repository.MdMaterialRepository;
 import com.mes.admin.modules.system.entity.SysOrg;
 import com.mes.admin.modules.system.entity.SysRole;
 import com.mes.admin.modules.system.entity.SysRoleDept;
+import com.mes.admin.modules.system.entity.SysRoleMaterial;
 import com.mes.admin.modules.system.repository.SysOrgRepository;
 import com.mes.admin.modules.system.repository.SysRoleDeptRepository;
+import com.mes.admin.modules.system.repository.SysRoleMaterialRepository;
 import com.mes.admin.modules.system.repository.SysRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +20,7 @@ import java.util.stream.Collectors;
 
 /**
  * 数据权限服务
- * 负责维护角色的 dataScope 范围配置，以及角色-组织 关联表
+ * 负责维护角色的 dataScope 范围配置，以及角色-组织、角色-物料关联表
  */
 @Service
 public class SysDataScopeService {
@@ -28,11 +32,14 @@ public class SysDataScopeService {
     private SysRoleDeptRepository sysRoleDeptRepository;
 
     @Autowired
+    private SysRoleMaterialRepository sysRoleMaterialRepository;
+
+    @Autowired
     private SysOrgRepository sysOrgRepository;
 
-    /**
-     * 查询角色列表（带过滤）
-     */
+    @Autowired
+    private MdMaterialRepository mdMaterialRepository;
+
     public List<SysRole> findRoles(Map<String, Object> params) {
         try {
             return sysRoleRepository.findAll((root, query, cb) -> {
@@ -49,30 +56,22 @@ public class SysDataScopeService {
                 return cb.and(ps.toArray(new Predicate[0]));
             });
         } catch (Exception ignored) {
-            // 数据库不可用 → 返回模拟数据
             return buildMockRoles();
         }
     }
 
-    /**
-     * 查询单个角色
-     */
     public SysRole findRoleById(Long id) {
         if (id == null) return null;
         try {
             Optional<SysRole> opt = sysRoleRepository.findById(id);
             if (opt.isPresent()) return opt.get();
         } catch (Exception ignored) {}
-        // 找不到时，返回模拟数据
         for (SysRole r : buildMockRoles()) {
             if (id.equals(r.getId())) return r;
         }
         return null;
     }
 
-    /**
-     * 保存角色（新增/更新）
-     */
     @Transactional
     public SysRole saveRole(SysRole role) {
         if (role == null) return null;
@@ -83,7 +82,6 @@ public class SysDataScopeService {
         try {
             return sysRoleRepository.save(role);
         } catch (Exception ignored) {
-            // 模拟保存
             if (role.getId() == null) {
                 role.setId(System.currentTimeMillis());
             }
@@ -91,22 +89,20 @@ public class SysDataScopeService {
         }
     }
 
-    /**
-     * 删除角色
-     */
     @Transactional
     public void deleteRole(Long id) {
         try {
             sysRoleDeptRepository.deleteByRoleId(id);
         } catch (Exception ignored) {}
         try {
+            sysRoleMaterialRepository.deleteByRoleId(id);
+        } catch (Exception ignored) {}
+        try {
             sysRoleRepository.deleteById(id);
         } catch (Exception ignored) {}
     }
 
-    /**
-     * 获取角色关联的组织 ID 列表
-     */
+    /** 获取角色关联的组织 ID 列表 */
     public List<Long> findDeptIdsByRoleId(Long roleId) {
         try {
             return sysRoleDeptRepository.findByRoleId(roleId).stream()
@@ -115,25 +111,30 @@ public class SysDataScopeService {
                     .collect(Collectors.toList());
         } catch (Exception ignored) {
             if (roleId != null && roleId == 1L) {
-                return Collections.singletonList(1L); // 超级管理员默认根节点
+                return Collections.singletonList(1L);
             }
             return Collections.emptyList();
         }
     }
 
-    /**
-     * 分配数据权限：更新角色的 dataScope + 组织关联
-     *
-     * @param roleId     角色ID
-     * @param dataScope  数据范围（1-5）
-     * @param deptIds    自定义时可选的组织 ID 列表（可为空）
-     */
+    /** 获取角色关联的物料 ID 列表 */
+    public List<Long> findMaterialIdsByRoleId(Long roleId) {
+        try {
+            return sysRoleMaterialRepository.findByRoleId(roleId).stream()
+                    .map(SysRoleMaterial::getMaterialId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } catch (Exception ignored) {
+            return Collections.emptyList();
+        }
+    }
+
+    /** 分配组织数据权限 */
     @Transactional
     public void assignDataScope(Long roleId, String dataScope, List<Long> deptIds) {
         if (roleId == null) throw new RuntimeException("角色ID不能为空");
         if (dataScope == null || dataScope.isEmpty()) dataScope = "1";
 
-        // 更新角色的 dataScope
         try {
             Optional<SysRole> opt = sysRoleRepository.findById(roleId);
             if (opt.isPresent()) {
@@ -143,12 +144,10 @@ public class SysDataScopeService {
             }
         } catch (Exception ignored) {}
 
-        // 删除旧的角色-组织 关联
         try {
             sysRoleDeptRepository.deleteByRoleId(roleId);
         } catch (Exception ignored) {}
 
-        // 只有"自定义数据"才保存新关联
         if ("2".equals(dataScope) && deptIds != null && !deptIds.isEmpty()) {
             try {
                 for (Long deptId : deptIds) {
@@ -157,16 +156,45 @@ public class SysDataScopeService {
                     rd.setDeptId(deptId);
                     sysRoleDeptRepository.save(rd);
                 }
-            } catch (Exception ignored) {
-                // 模拟模式下不报错
-            }
+            } catch (Exception ignored) {}
         }
     }
 
     /**
-     * 获取组织树（用于前端弹窗选择组织）
-     * 包含 orgId, orgName, parentId 字段
+     * 分配物料数据权限
+     * @param roleId 角色ID
+     * @param materialIds 物料ID列表（可为空，空则清空关联）
      */
+    @Transactional
+    public void assignMaterialScope(Long roleId, List<Long> materialIds) {
+        if (roleId == null) throw new RuntimeException("角色ID不能为空");
+
+        try {
+            sysRoleMaterialRepository.deleteByRoleId(roleId);
+        } catch (Exception ignored) {}
+
+        if (materialIds == null || materialIds.isEmpty()) return;
+
+        try {
+            for (Long materialId : materialIds) {
+                // 获取物料信息（冗余存储便于查询）
+                MdMaterial material = null;
+                try {
+                    Optional<MdMaterial> opt = mdMaterialRepository.findById(materialId);
+                    if (opt.isPresent()) material = opt.get();
+                } catch (Exception ignored) {}
+
+                SysRoleMaterial rm = new SysRoleMaterial();
+                rm.setRoleId(roleId);
+                rm.setMaterialId(materialId);
+                rm.setMaterialCode(material != null ? material.getMaterialCode() : null);
+                rm.setMaterialName(material != null ? material.getMaterialName() : null);
+                sysRoleMaterialRepository.save(rm);
+            }
+        } catch (Exception ignored) {}
+    }
+
+    /** 获取组织树 */
     public List<Map<String, Object>> findOrgTree() {
         List<SysOrg> orgs;
         try {
@@ -177,7 +205,6 @@ public class SysDataScopeService {
         if (orgs == null || orgs.isEmpty()) {
             orgs = buildMockOrgs();
         }
-        // 转为 tree
         Map<Long, Map<String, Object>> map = new LinkedHashMap<>();
         for (SysOrg org : orgs) {
             Map<String, Object> node = new LinkedHashMap<>();
@@ -204,7 +231,41 @@ public class SysDataScopeService {
         return roots;
     }
 
-    // ============== Mock 数据 ==============
+    /**
+     * 查询物料列表（用于前端多选）
+     * @param materialType 物料类型过滤（可选）
+     */
+    public List<Map<String, Object>> findMaterials(String materialType) {
+        List<MdMaterial> materials;
+        try {
+            materials = mdMaterialRepository.findAll((root, query, cb) -> {
+                if (materialType != null && !materialType.isEmpty()) {
+                    return cb.equal(root.get("materialType"), materialType);
+                }
+                return null;
+            });
+        } catch (Exception ignored) {
+            materials = null;
+        }
+        if (materials == null || materials.isEmpty()) {
+            materials = buildMockMaterials();
+            if (materialType != null && !materialType.isEmpty()) {
+                materials = materials.stream()
+                        .filter(m -> materialType.equals(m.getMaterialType()))
+                        .collect(Collectors.toList());
+            }
+        }
+        return materials.stream().map(m -> {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", m.getId());
+            item.put("materialCode", m.getMaterialCode());
+            item.put("materialName", m.getMaterialName());
+            item.put("materialType", m.getMaterialType());
+            item.put("spec", m.getSpec());
+            item.put("unit", m.getUnit());
+            return item;
+        }).collect(Collectors.toList());
+    }
 
     private List<SysRole> buildMockRoles() {
         List<SysRole> list = new ArrayList<>();
@@ -250,5 +311,31 @@ public class SysDataScopeService {
         org.setOrgCode(code);
         org.setOrgType(type);
         return org;
+    }
+
+    private List<MdMaterial> buildMockMaterials() {
+        List<MdMaterial> list = new ArrayList<>();
+        list.add(makeMockMaterial(1L, "M00001", "不锈钢板", "1220*2440*2mm", "原材料", "张"));
+        list.add(makeMockMaterial(2L, "M00002", "铝合金型材", "6063-T5 2m", "原材料", "根"));
+        list.add(makeMockMaterial(3L, "M00003", "碳钢圆棒", "直径20mm", "原材料", "根"));
+        list.add(makeMockMaterial(4L, "B00001", "半成品装配A", "A100", "半成品", "件"));
+        list.add(makeMockMaterial(5L, "B00002", "半成品装配B", "B200", "半成品", "件"));
+        list.add(makeMockMaterial(6L, "F00001", "工控机箱", "IPC-610L", "成品", "台"));
+        list.add(makeMockMaterial(7L, "F00002", "触控一体机", "15寸", "成品", "台"));
+        list.add(makeMockMaterial(8L, "A00001", "内六角螺丝", "M4x8", "辅料", "包"));
+        list.add(makeMockMaterial(9L, "A00002", "垫片", "M4", "辅料", "包"));
+        list.add(makeMockMaterial(10L, "A00003", "螺母", "M4", "辅料", "包"));
+        return list;
+    }
+
+    private MdMaterial makeMockMaterial(Long id, String code, String name, String spec, String type, String unit) {
+        MdMaterial m = new MdMaterial();
+        m.setId(id);
+        m.setMaterialCode(code);
+        m.setMaterialName(name);
+        m.setSpec(spec);
+        m.setMaterialType(type);
+        m.setUnit(unit);
+        return m;
     }
 }

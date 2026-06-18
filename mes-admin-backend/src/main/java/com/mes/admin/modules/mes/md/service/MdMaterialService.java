@@ -2,7 +2,9 @@ package com.mes.admin.modules.mes.md.service;
 
 import com.mes.admin.modules.mes.md.entity.MdMaterial;
 import com.mes.admin.modules.mes.md.repository.MdMaterialRepository;
+import com.mes.admin.modules.system.entity.SysRoleMaterial;
 import com.mes.admin.modules.system.entity.SysUser;
+import com.mes.admin.modules.system.repository.SysRoleMaterialRepository;
 import com.mes.admin.modules.system.service.SysUserService;
 import com.mes.admin.modules.system.util.DataScopeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,9 @@ public class MdMaterialService {
     @Autowired
     private SysUserService sysUserService;
 
-    /**
-     * 物料列表（接入数据权限：按 orgId 过滤）
-     */
+    @Autowired
+    private SysRoleMaterialRepository sysRoleMaterialRepository;
+
     public List<MdMaterial> list(Map<String, Object> params) {
         SysUser current = sysUserService.findByUsername("admin");
 
@@ -51,7 +53,7 @@ public class MdMaterialService {
                         predicates.add(cb.equal(root.get("status"), params.get("status")));
                     }
                 }
-                // 数据权限过滤
+                // 组织级别数据权限过滤
                 Set<Long> orgIds = dataScopeHelper.getVisibleOrgIds(current);
                 if (orgIds != null) {
                     if (dataScopeHelper.isSelfOnly(current)) {
@@ -62,10 +64,14 @@ public class MdMaterialService {
                         predicates.add(cb.equal(root.get("id"), -1L));
                     }
                 }
+                // 物料级别数据权限过滤
+                Set<Long> materialIds = getVisibleMaterialIds(current);
+                if (materialIds != null && !materialIds.isEmpty()) {
+                    predicates.add(root.get("id").in(materialIds));
+                }
                 return cb.and(predicates.toArray(new Predicate[0]));
             });
         } catch (Exception ignored) {
-            // mock 数据
             List<MdMaterial> all = buildMockMaterials();
             if (params != null) {
                 String code = params.get("materialCode") != null ? params.get("materialCode").toString() : null;
@@ -82,15 +88,53 @@ public class MdMaterialService {
                     return true;
                 }).collect(Collectors.toList());
             }
-            // 数据权限过滤
+            // 组织级别数据权限过滤
             Set<Long> orgIds = dataScopeHelper.getVisibleOrgIds(current);
-            if (orgIds == null) return all;
-            if (dataScopeHelper.isSelfOnly(current)) return Collections.emptyList();
-            List<MdMaterial> result = new ArrayList<>();
-            for (MdMaterial m : all) {
-                if (m.getOrgId() != null && orgIds.contains(m.getOrgId())) result.add(m);
+            if (orgIds != null && !orgIds.isEmpty()) {
+                all = all.stream().filter(m -> m.getOrgId() != null && orgIds.contains(m.getOrgId())).collect(Collectors.toList());
             }
-            return result;
+            if (dataScopeHelper.isSelfOnly(current)) return Collections.emptyList();
+            // 物料级别数据权限过滤
+            Set<Long> materialIds = getVisibleMaterialIds(current);
+            if (materialIds != null && !materialIds.isEmpty()) {
+                all = all.stream().filter(m -> materialIds.contains(m.getId())).collect(Collectors.toList());
+            }
+            return all;
+        }
+    }
+
+    /**
+     * 获取当前用户可见的物料ID集合（通过角色-物料关联表）
+     * 返回 null 表示无限制
+     */
+    private Set<Long> getVisibleMaterialIds(SysUser current) {
+        if (current == null || current.getId() == null) {
+            return Collections.emptySet();
+        }
+        // 超级管理员不受限制
+        if (current.getId() == 1L) {
+            return null;
+        }
+        try {
+            List<Long> roleIds = dataScopeHelper.getUserRoleIds(current);
+            if (roleIds == null || roleIds.isEmpty()) {
+                return null;
+            }
+            List<Long> materialIds = new ArrayList<>();
+            for (Long roleId : roleIds) {
+                List<SysRoleMaterial> roleMaterials = sysRoleMaterialRepository.findByRoleId(roleId);
+                for (SysRoleMaterial rm : roleMaterials) {
+                    if (rm.getMaterialId() != null) {
+                        materialIds.add(rm.getMaterialId());
+                    }
+                }
+            }
+            if (materialIds.isEmpty()) {
+                return null; // 无物料权限限制
+            }
+            return new HashSet<>(materialIds);
+        } catch (Exception ignored) {
+            return null;
         }
     }
 
