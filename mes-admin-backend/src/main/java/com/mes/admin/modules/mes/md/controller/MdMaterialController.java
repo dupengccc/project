@@ -27,14 +27,18 @@ public class MdMaterialController {
 
     @GetMapping
     public Result<PageUtil.PageResult<MdMaterial>> list(
-            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String materialCode,
+            @RequestParam(required = false) String materialName,
             @RequestParam(required = false) String materialType,
+            @RequestParam(required = false) String manageMode,
             @RequestParam(required = false) Integer status,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         Map<String, Object> params = new HashMap<>();
-        if (keyword != null) params.put("keyword", keyword);
+        if (materialCode != null) params.put("materialCode", materialCode);
+        if (materialName != null) params.put("materialName", materialName);
         if (materialType != null) params.put("materialType", materialType);
+        if (manageMode != null) params.put("manageMode", manageMode);
         if (status != null) params.put("status", status);
         return Result.success(PageUtil.toPage(mdMaterialService.list(params), page, pageSize));
     }

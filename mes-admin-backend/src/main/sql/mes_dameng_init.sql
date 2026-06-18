@@ -203,7 +203,10 @@ CREATE TABLE mes_md_material (
     material_name VARCHAR(128),
     spec VARCHAR(255),
     material_type VARCHAR(32),
+    manage_mode VARCHAR(32),
     unit VARCHAR(32),
+    org_id BIGINT,
+    org_name VARCHAR(128),
     safe_stock DECIMAL(18,2),
     current_stock DECIMAL(18,2),
     status INT DEFAULT 0,
@@ -214,6 +217,9 @@ CREATE TABLE mes_md_material (
     update_time DATETIME,
     PRIMARY KEY (id)
 );
+CREATE INDEX idx_mes_md_material_code ON mes_md_material(material_code);
+CREATE INDEX idx_mes_md_material_type ON mes_md_material(material_type);
+CREATE INDEX idx_mes_md_material_org ON mes_md_material(org_id);
 
 CREATE TABLE mes_md_customer (
     id BIGINT IDENTITY(1,1) NOT NULL,
