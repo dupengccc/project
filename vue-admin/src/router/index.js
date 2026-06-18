@@ -324,6 +324,12 @@ export const constantRoutes = [
         name: 'SystemProductionUnit',
         component: () => import('@/views/system/production-unit/index.vue'),
         meta: { title: '生产单元', icon: 'Box' }
+      },
+      {
+        path: 'interface-manage',
+        name: 'SystemInterfaceManage',
+        component: () => import('@/views/system/interface-manage/index.vue'),
+        meta: { title: '接口管理', icon: 'Connection' }
       }
     ]
   },

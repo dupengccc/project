@@ -159,6 +159,86 @@ CREATE TABLE sys_production_unit (
 CREATE INDEX idx_sys_production_unit_org ON sys_production_unit(org_id);
 CREATE INDEX idx_sys_production_unit_code ON sys_production_unit(unit_code);
 
+-- 接口配置表
+CREATE TABLE sys_interface_config (
+    id NUMBER(20) NOT NULL,
+    interface_code VARCHAR(64) UNIQUE,
+    interface_name VARCHAR(128),
+    description VARCHAR(500),
+    url VARCHAR(500),
+    request_method VARCHAR(16),
+    content_type VARCHAR(64),
+    headers TEXT,
+    param_template TEXT,
+    auth_type VARCHAR(32),
+    auth_config TEXT,
+    timeout INT DEFAULT 30000,
+    retry_count INT DEFAULT 3,
+    retry_interval INT DEFAULT 5000,
+    rate_limit INT DEFAULT 60,
+    status INT DEFAULT 0,
+    encrypt_enabled INT DEFAULT 0,
+    encrypt_key VARCHAR(255),
+    callback_url VARCHAR(500),
+    owner_system VARCHAR(64),
+    contact VARCHAR(64),
+    contact_phone VARCHAR(32),
+    remark VARCHAR(500),
+    create_by VARCHAR(64),
+    create_time DATETIME DEFAULT SYSDATE,
+    update_by VARCHAR(64),
+    update_time DATETIME,
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_interface_config_code ON sys_interface_config(interface_code);
+CREATE INDEX idx_interface_config_system ON sys_interface_config(owner_system);
+
+-- 接口调用日志表
+CREATE TABLE sys_interface_log (
+    id NUMBER(20) NOT NULL,
+    config_id NUMBER(20),
+    interface_code VARCHAR(64),
+    interface_name VARCHAR(128),
+    request_url VARCHAR(500),
+    request_method VARCHAR(16),
+    request_headers TEXT,
+    request_params TEXT,
+    request_body TEXT,
+    response_status INT,
+    response_headers TEXT,
+    response_body TEXT,
+    response_time BIGINT,
+    call_status INT DEFAULT 0,
+    error_msg TEXT,
+    exception_type VARCHAR(128),
+    stack_trace TEXT,
+    biz_status VARCHAR(16),
+    biz_message VARCHAR(255),
+    biz_no VARCHAR(64),
+    source_system VARCHAR(64),
+    source_module VARCHAR(64),
+    operator_id NUMBER(20),
+    operator_name VARCHAR(64),
+    ip_address VARCHAR(64),
+    call_time DATETIME,
+    finish_time DATETIME,
+    retry_count INT DEFAULT 0,
+    processed INT DEFAULT 0,
+    processor VARCHAR(64),
+    process_time DATETIME,
+    process_remark VARCHAR(500),
+    call_type INT DEFAULT 0,
+    create_by VARCHAR(64),
+    create_time DATETIME DEFAULT SYSDATE,
+    update_by VARCHAR(64),
+    update_time DATETIME,
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_interface_log_code ON sys_interface_log(interface_code);
+CREATE INDEX idx_interface_log_status ON sys_interface_log(call_status);
+CREATE INDEX idx_interface_log_biz_no ON sys_interface_log(biz_no);
+CREATE INDEX idx_interface_log_call_time ON sys_interface_log(call_time);
+
 -- 菜单表
 CREATE TABLE sys_menu (
     id NUMBER(20) NOT NULL,
