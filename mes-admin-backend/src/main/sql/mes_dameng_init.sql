@@ -108,6 +108,7 @@ CREATE TABLE sys_role (
     role_key VARCHAR(64),
     role_sort INT DEFAULT 0,
     status INT DEFAULT 0,
+    data_scope VARCHAR(2) DEFAULT '1',
     remark VARCHAR(500),
     create_by VARCHAR(64),
     create_time DATETIME DEFAULT SYSDATE,
@@ -115,6 +116,16 @@ CREATE TABLE sys_role (
     update_time DATETIME,
     PRIMARY KEY (id)
 );
+
+-- 角色-组织 关联表（用于"自定义数据范围"）
+CREATE TABLE sys_role_dept (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    role_id BIGINT NOT NULL,
+    dept_id BIGINT NOT NULL,
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_sys_role_dept_role ON sys_role_dept(role_id);
+CREATE INDEX idx_sys_role_dept_dept ON sys_role_dept(dept_id);
 
 -- 菜单表
 CREATE TABLE sys_menu (
@@ -741,7 +752,25 @@ VALUES (1, 'admin', '$2a$10$7EqJtq98hPqEX7fNZaFWoO5m6kU6F1S6D6p6j5E0V5b9d9j7h6',
 INSERT INTO sys_user (id, username, password, nickname, email, phone, gender, dept_id, status)
 VALUES (2, 'operator', '$2a$10$7EqJtq98hPqEX7fNZaFWoO5m6kU6F1S6D6p6j5E0V5b9d9j7h6', '操作员', 'op@mes.com', '13800000001', 0, 2, 0);
 
--- 2. 初始化组织数据 (MES 典型组织)
+-- 2. 初始化角色（包含数据权限范围）
+INSERT INTO sys_role (id, role_name, role_key, role_sort, status, data_scope, remark)
+VALUES (1, '超级管理员', 'super_admin', 1, 0, '1', '全部数据权限');
+INSERT INTO sys_role (id, role_name, role_key, role_sort, status, data_scope, remark)
+VALUES (2, '集团管理员', 'group_admin', 2, 0, '4', '本集团及以下部门');
+INSERT INTO sys_role (id, role_name, role_key, role_sort, status, data_scope, remark)
+VALUES (3, '分公司管理员', 'branch_admin', 3, 0, '4', '本分公司及以下部门');
+INSERT INTO sys_role (id, role_name, role_key, role_sort, status, data_scope, remark)
+VALUES (4, '部门管理员', 'dept_admin', 4, 0, '3', '仅本部门');
+INSERT INTO sys_role (id, role_name, role_key, role_sort, status, data_scope, remark)
+VALUES (5, '普通用户', 'user', 5, 0, '5', '仅本人数据');
+INSERT INTO sys_role (id, role_name, role_key, role_sort, status, data_scope, remark)
+VALUES (6, '访客', 'guest', 6, 1, '5', '只读访客');
+
+-- 3. 角色-组织 关联（用于"自定义数据范围"，此处示例：分公司管理员角色可见华东/华南分公司）
+INSERT INTO sys_role_dept (role_id, dept_id) VALUES (3, 2);
+INSERT INTO sys_role_dept (role_id, dept_id) VALUES (3, 3);
+
+-- 4. 初始化组织数据 (MES 典型组织)
 INSERT INTO sys_org (id, parent_id, org_code, name, org_type, leader, phone, email, address, sort, status)
 VALUES (1, 0, 'M001', 'MES 集团', 'group', '张总', '13800000010', 'ceo@mes.com', '上海市浦东新区', 1, 0);
 

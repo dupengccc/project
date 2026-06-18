@@ -30,4 +30,18 @@ public class SysRole extends BaseEntity {
     private Integer roleSort;
 
     private Integer status;
+
+    /**
+     * 数据范围（数据权限类型）
+     * 1 - 全部数据
+     * 2 - 自定义数据（通过 sys_role_dept 关联）
+     * 3 - 本部门数据
+     * 4 - 本部门及以下
+     * 5 - 仅本人数据
+     */
+    @Column(length = 2)
+    private String dataScope;
+
+    @Column(length = 255)
+    private String remark;
 }

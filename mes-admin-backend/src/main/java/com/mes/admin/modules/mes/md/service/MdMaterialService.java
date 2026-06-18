@@ -2,15 +2,15 @@ package com.mes.admin.modules.mes.md.service;
 
 import com.mes.admin.modules.mes.md.entity.MdMaterial;
 import com.mes.admin.modules.mes.md.repository.MdMaterialRepository;
+import com.mes.admin.modules.system.entity.SysUser;
+import com.mes.admin.modules.system.service.SysUserService;
+import com.mes.admin.modules.system.util.DataScopeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.persistence.criteria.Predicate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,55 +19,107 @@ public class MdMaterialService {
     @Autowired
     private MdMaterialRepository mdMaterialRepository;
 
+    @Autowired
+    private DataScopeHelper dataScopeHelper;
+
+    @Autowired
+    private SysUserService sysUserService;
+
+    /**
+     * 物料列表（接入数据权限：按 orgId 过滤）
+     */
     public List<MdMaterial> list(Map<String, Object> params) {
+        SysUser current = sysUserService.findByUsername("admin");
+
         try {
-            List<MdMaterial> all = mdMaterialRepository.findAll();
-            return filterMaterials(all, params);
+            return mdMaterialRepository.findAll((root, query, cb) -> {
+                List<Predicate> predicates = new ArrayList<>();
+                if (params != null) {
+                    if (params.get("materialCode") != null) {
+                        predicates.add(cb.like(root.get("materialCode"), "%" + params.get("materialCode") + "%"));
+                    }
+                    if (params.get("materialName") != null) {
+                        predicates.add(cb.like(root.get("materialName"), "%" + params.get("materialName") + "%"));
+                    }
+                    if (params.get("materialType") != null) {
+                        predicates.add(cb.equal(root.get("materialType"), params.get("materialType")));
+                    }
+                    if (params.get("manageMode") != null) {
+                        predicates.add(cb.equal(root.get("manageMode"), params.get("manageMode")));
+                    }
+                    if (params.get("status") != null) {
+                        predicates.add(cb.equal(root.get("status"), params.get("status")));
+                    }
+                }
+                // 数据权限过滤
+                Set<Long> orgIds = dataScopeHelper.getVisibleOrgIds(current);
+                if (orgIds != null) {
+                    if (dataScopeHelper.isSelfOnly(current)) {
+                        predicates.add(cb.equal(root.get("id"), -1L));
+                    } else if (!orgIds.isEmpty()) {
+                        predicates.add(root.get("orgId").in(orgIds));
+                    } else {
+                        predicates.add(cb.equal(root.get("id"), -1L));
+                    }
+                }
+                return cb.and(predicates.toArray(new Predicate[0]));
+            });
         } catch (Exception ignored) {
-            return filterMaterials(buildMockMaterials(), params);
+            // mock 数据
+            List<MdMaterial> all = buildMockMaterials();
+            if (params != null) {
+                String code = params.get("materialCode") != null ? params.get("materialCode").toString() : null;
+                String name = params.get("materialName") != null ? params.get("materialName").toString() : null;
+                String type = params.get("materialType") != null ? params.get("materialType").toString() : null;
+                String mode = params.get("manageMode") != null ? params.get("manageMode").toString() : null;
+                all = all.stream().filter(m -> {
+                    if (code != null && !code.isEmpty()
+                            && (m.getMaterialCode() == null || !m.getMaterialCode().contains(code))) return false;
+                    if (name != null && !name.isEmpty()
+                            && (m.getMaterialName() == null || !m.getMaterialName().contains(name))) return false;
+                    if (type != null && !type.equals(m.getMaterialType())) return false;
+                    if (mode != null && !mode.equals(m.getManageMode())) return false;
+                    return true;
+                }).collect(Collectors.toList());
+            }
+            // 数据权限过滤
+            Set<Long> orgIds = dataScopeHelper.getVisibleOrgIds(current);
+            if (orgIds == null) return all;
+            if (dataScopeHelper.isSelfOnly(current)) return Collections.emptyList();
+            List<MdMaterial> result = new ArrayList<>();
+            for (MdMaterial m : all) {
+                if (m.getOrgId() != null && orgIds.contains(m.getOrgId())) result.add(m);
+            }
+            return result;
         }
     }
 
     public MdMaterial getById(Long id) {
         try {
             Optional<MdMaterial> opt = mdMaterialRepository.findById(id);
-            if (opt.isPresent()) {
-                return opt.get();
-            }
-        } catch (Exception ignored) {
-        }
+            if (opt.isPresent()) return opt.get();
+        } catch (Exception ignored) {}
         for (MdMaterial m : buildMockMaterials()) {
-            if (m.getId().equals(id)) {
-                return m;
-            }
+            if (m.getId().equals(id)) return m;
         }
         return null;
     }
 
+    @Transactional
     public MdMaterial create(MdMaterial material) {
-        if (material.getStatus() == null) {
-            material.setStatus(0);
-        }
-        if (material.getCreateTime() == null) {
-            material.setCreateTime(new Date());
-        }
+        if (material.getStatus() == null) material.setStatus(0);
+        if (material.getCreateTime() == null) material.setCreateTime(new Date());
         try {
             return mdMaterialRepository.save(material);
         } catch (Exception ignored) {
-            if (material.getId() == null) {
-                material.setId(System.currentTimeMillis());
-            }
+            if (material.getId() == null) material.setId(System.currentTimeMillis());
             return material;
         }
     }
 
+    @Transactional
     public MdMaterial update(MdMaterial material) {
-        if (material.getId() == null) {
-            throw new RuntimeException("物料ID不能为空");
-        }
-        if (material.getUpdateTime() == null) {
-            material.setUpdateTime(new Date());
-        }
+        if (material.getId() == null) throw new RuntimeException("物料ID不能为空");
         try {
             return mdMaterialRepository.save(material);
         } catch (Exception ignored) {
@@ -78,43 +130,7 @@ public class MdMaterialService {
     public void delete(Long id) {
         try {
             mdMaterialRepository.deleteById(id);
-        } catch (Exception ignored) {
-        }
-    }
-
-    private List<MdMaterial> filterMaterials(List<MdMaterial> list, Map<String, Object> params) {
-        if (params == null || params.isEmpty()) {
-            return list;
-        }
-        String materialCode = params.get("materialCode") != null ? params.get("materialCode").toString() : null;
-        String materialName = params.get("materialName") != null ? params.get("materialName").toString() : null;
-        String materialType = params.get("materialType") != null ? params.get("materialType").toString() : null;
-        String manageMode = params.get("manageMode") != null ? params.get("manageMode").toString() : null;
-        Object statusObj = params.get("status");
-        return list.stream().filter(m -> {
-            if (StringUtils.hasText(materialCode)
-                    && (m.getMaterialCode() == null || !m.getMaterialCode().contains(materialCode))) {
-                return false;
-            }
-            if (StringUtils.hasText(materialName)
-                    && (m.getMaterialName() == null || !m.getMaterialName().contains(materialName))) {
-                return false;
-            }
-            if (StringUtils.hasText(materialType) && !materialType.equals(m.getMaterialType())) {
-                return false;
-            }
-            if (StringUtils.hasText(manageMode) && !manageMode.equals(m.getManageMode())) {
-                return false;
-            }
-            if (statusObj != null) {
-                try {
-                    Integer s = Integer.valueOf(statusObj.toString());
-                    if (!s.equals(m.getStatus())) return false;
-                } catch (Exception ignored) {
-                }
-            }
-            return true;
-        }).collect(Collectors.toList());
+        } catch (Exception ignored) {}
     }
 
     private List<MdMaterial> buildMockMaterials() {

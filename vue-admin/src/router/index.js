@@ -312,6 +312,12 @@ export const constantRoutes = [
         name: 'SystemDict',
         component: () => import('@/views/system/dict/index.vue'),
         meta: { title: '字典管理', icon: 'Collection' }
+      },
+      {
+        path: 'data-scope',
+        name: 'SystemDataScope',
+        component: () => import('@/views/system/data-scope/index.vue'),
+        meta: { title: '数据权限', icon: 'Lock' }
       }
     ]
   },
