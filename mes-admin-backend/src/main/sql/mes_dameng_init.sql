@@ -139,6 +139,26 @@ CREATE TABLE sys_role_material (
 CREATE INDEX idx_sys_role_material_role ON sys_role_material(role_id);
 CREATE INDEX idx_sys_role_material_material ON sys_role_material(material_id);
 
+-- 生产单元表
+CREATE TABLE sys_production_unit (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    unit_code VARCHAR(64) UNIQUE,
+    unit_name VARCHAR(128),
+    unit_type VARCHAR(32),
+    org_id BIGINT,
+    org_name VARCHAR(128),
+    status INT DEFAULT 0,
+    sort INT DEFAULT 0,
+    remark VARCHAR(500),
+    create_by VARCHAR(64),
+    create_time DATETIME DEFAULT SYSDATE,
+    update_by VARCHAR(64),
+    update_time DATETIME,
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_sys_production_unit_org ON sys_production_unit(org_id);
+CREATE INDEX idx_sys_production_unit_code ON sys_production_unit(unit_code);
+
 -- 菜单表
 CREATE TABLE sys_menu (
     id BIGINT IDENTITY(1,1) NOT NULL,

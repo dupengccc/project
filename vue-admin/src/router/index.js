@@ -318,6 +318,12 @@ export const constantRoutes = [
         name: 'SystemDataScope',
         component: () => import('@/views/system/data-scope/index.vue'),
         meta: { title: '数据权限', icon: 'Lock' }
+      },
+      {
+        path: 'production-unit',
+        name: 'SystemProductionUnit',
+        component: () => import('@/views/system/production-unit/index.vue'),
+        meta: { title: '生产单元', icon: 'Box' }
       }
     ]
   },
