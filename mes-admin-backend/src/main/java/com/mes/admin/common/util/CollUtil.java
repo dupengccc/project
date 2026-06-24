@@ -167,15 +167,16 @@ public class CollUtil {
         if (isEmpty(list)) {
             return new ArrayList<>();
         }
-        return list.stream()
-                .collect(Collectors.collectingAndThen(
-                        Collectors.toCollection(
-                                java.util.stream.Collectors.toCollection(() ->
-                                        new java.util.LinkedHashSet<>(Comparator.comparing(keyExtractor))
-                                )
-                        ),
-                        ArrayList::new
-                ));
+        Map<R, Boolean> seen = new LinkedHashMap<>();
+        List<T> result = new ArrayList<>();
+        for (T item : list) {
+            R key = keyExtractor.apply(item);
+            if (!seen.containsKey(key)) {
+                seen.put(key, true);
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     /**
@@ -277,7 +278,12 @@ public class CollUtil {
             return new LinkedHashMap<>();
         }
         return list.stream().collect(Collectors.toMap(keyExtractor, Function.identity(),
-                (e1, e2) -> e1, java.util.stream.Collectors.toCollection(LinkedHashMap::new)));
+                (e1, e2) -> e1, new java.util.function.Supplier<LinkedHashMap<K, T>>() {
+                    @Override
+                    public LinkedHashMap<K, T> get() {
+                        return new LinkedHashMap<>();
+                    }
+                }));
     }
 
     // ==================== 列表分组 ====================

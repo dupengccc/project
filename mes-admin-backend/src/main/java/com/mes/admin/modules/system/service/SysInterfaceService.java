@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
 import java.util.*;
+import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -393,7 +394,7 @@ public class SysInterfaceService {
         }
     }
 
-    private void createErrorLog(Long configId, String interfaceCode, String errorMsg, String bizNo, String sourceSystem) {
+    private SysInterfaceLog createErrorLog(Long configId, String interfaceCode, String errorMsg, String bizNo, String sourceSystem) {
         SysInterfaceLog log = new SysInterfaceLog();
         log.setConfigId(configId);
         log.setInterfaceCode(interfaceCode);

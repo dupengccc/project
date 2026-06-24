@@ -32,7 +32,7 @@ public class HttpCallUtil {
     /**
      * 创建 RestTemplate
      */
-    private RestTemplate createTemplate(int readTimeout, int connectTimeout) {
+    private static RestTemplate createTemplate(int readTimeout, int connectTimeout) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);
@@ -44,12 +44,17 @@ public class HttpCallUtil {
      */
     public static RestTemplate getTemplate(int timeout) {
         String key = "timeout_" + timeout;
-        return TEMPLATE_CACHE.computeIfAbsent(key, k -> {
-            SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-            factory.setConnectTimeout(5000);
-            factory.setReadTimeout(timeout);
-            return new RestTemplate(factory);
-        });
+        RestTemplate template = TEMPLATE_CACHE.get(key);
+        if (template == null) {
+            synchronized (HttpCallUtil.class) {
+                template = TEMPLATE_CACHE.get(key);
+                if (template == null) {
+                    template = createTemplate(timeout, 5000);
+                    TEMPLATE_CACHE.put(key, template);
+                }
+            }
+        }
+        return template;
     }
 
     /**
