@@ -184,13 +184,11 @@ public class SqlQueryExamples {
      */
     @DataSource("master")
     public List<Map<String, Object>> findUserRoleInfo() {
-        String sql = """
-                SELECT u.id, u.username, u.nickname, r.role_name
-                FROM sys_user u
-                LEFT JOIN sys_user_role ur ON u.id = ur.user_id
-                LEFT JOIN sys_role r ON ur.role_id = r.id
-                WHERE u.status = 0
-                """;
+        String sql = "SELECT u.id, u.username, u.nickname, r.role_name " +
+                "FROM sys_user u " +
+                "LEFT JOIN sys_user_role ur ON u.id = ur.user_id " +
+                "LEFT JOIN sys_role r ON ur.role_id = r.id " +
+                "WHERE u.status = 0";
         return sqlQuery.findMapList(sql);
     }
 }

@@ -426,7 +426,11 @@ public class StringUtil {
      */
     public static String repeat(String str, int count) {
         if (str == null || count <= 0) return EMPTY;
-        return str.repeat(count);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            sb.append(str);
+        }
+        return sb.toString();
     }
 
     /**
