@@ -330,6 +330,12 @@ export const constantRoutes = [
         name: 'SystemInterfaceManage',
         component: () => import('@/views/system/interface-manage/index.vue'),
         meta: { title: '接口管理', icon: 'Connection' }
+      },
+      {
+        path: 'job',
+        name: 'SystemJob',
+        component: () => import('@/views/system/job/index.vue'),
+        meta: { title: '定时任务', icon: 'Clock' }
       }
     ]
   },

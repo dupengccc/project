@@ -239,6 +239,47 @@ CREATE INDEX idx_interface_log_status ON sys_interface_log(call_status);
 CREATE INDEX idx_interface_log_biz_no ON sys_interface_log(biz_no);
 CREATE INDEX idx_interface_log_call_time ON sys_interface_log(call_time);
 
+-- 定时任务调度表
+CREATE TABLE sys_job (
+    id NUMBER(20) NOT NULL,
+    job_name VARCHAR(64),
+    job_group VARCHAR(64),
+    invoke_target VARCHAR(500),
+    cron_expression VARCHAR(255),
+    misfire_policy INT DEFAULT 3,
+    concurrent INT DEFAULT 1,
+    status INT DEFAULT 0,
+    prev_time DATETIME,
+    next_time DATETIME,
+    create_by VARCHAR(64),
+    create_time DATETIME DEFAULT SYSDATE,
+    update_by VARCHAR(64),
+    update_time DATETIME,
+    remark VARCHAR(500),
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_sys_job_name ON sys_job(job_name);
+CREATE INDEX idx_sys_job_group ON sys_job(job_group);
+CREATE INDEX idx_sys_job_status ON sys_job(status);
+
+-- 定时任务调度日志表
+CREATE TABLE sys_job_log (
+    id NUMBER(20) NOT NULL,
+    job_name VARCHAR(64),
+    job_group VARCHAR(64),
+    invoke_target VARCHAR(500),
+    job_message VARCHAR(500),
+    status INT DEFAULT 0,
+    exception_info TEXT,
+    start_time DATETIME,
+    end_time DATETIME,
+    cost_time BIGINT,
+    PRIMARY KEY (id)
+);
+CREATE INDEX idx_sys_job_log_name ON sys_job_log(job_name);
+CREATE INDEX idx_sys_job_log_status ON sys_job_log(status);
+CREATE INDEX idx_sys_job_log_start ON sys_job_log(start_time);
+
 -- 菜单表
 CREATE TABLE sys_menu (
     id NUMBER(20) NOT NULL,
