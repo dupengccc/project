@@ -22,37 +22,45 @@ import java.util.Date;
 @Table(name = "mes_pro_workorder")
 public class ProWorkorder extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "order_code", length = 64)
     private String orderCode;
 
-    @Column(length = 128)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
+    @Column(name = "plan_qty")
     private Double planQty;
 
+    @Column(name = "completed_qty")
     private Double completedQty;
 
-    @Column(length = 32)
+    @Column(name = "status", length = 32)
     private String status;
 
+    @Column(name = "priority")
     private Integer priority;
 
+    @Column(name = "plan_start")
     private Date planStart;
 
+    @Column(name = "plan_end")
     private Date planEnd;
 
+    @Column(name = "actual_start")
     private Date actualStart;
 
+    @Column(name = "actual_end")
     private Date actualEnd;
 
-    @Column(length = 64)
+    @Column(name = "workshop_name", length = 64)
     private String workshopName;
 
-    @Column(length = 64)
+    @Column(name = "workstation_name", length = 64)
     private String workstationName;
 
-    @Column(length = 64)
+    @Column(name = "operator", length = 64)
     private String operator;
 
+    @Column(name = "status_flag")
     private Integer statusFlag;
 }

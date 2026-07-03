@@ -21,20 +21,21 @@ import javax.persistence.Table;
 @Table(name = "mes_qc_defect")
 public class QcDefect extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "defect_code", length = 64)
     private String defectCode;
 
-    @Column(length = 128)
+    @Column(name = "defect_name", length = 128)
     private String defectName;
 
-    @Column(length = 32)
+    @Column(name = "defect_type", length = 32)
     private String defectType;
 
-    @Column(length = 32)
+    @Column(name = "severity", length = 32)
     private String severity;
 
-    @Column(length = 500)
+    @Column(name = "suggestion", length = 500)
     private String suggestion;
 
+    @Column(name = "status")
     private Integer status;
 }

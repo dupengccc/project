@@ -21,22 +21,24 @@ import javax.persistence.Table;
 @Table(name = "mes_cal_shift")
 public class CalShift extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "shift_code", length = 64)
     private String shiftCode;
 
-    @Column(length = 128)
+    @Column(name = "shift_name", length = 128)
     private String shiftName;
 
-    @Column(length = 16)
+    @Column(name = "start_time", length = 16)
     private String startTime;
 
-    @Column(length = 16)
+    @Column(name = "end_time", length = 16)
     private String endTime;
 
+    @Column(name = "hours")
     private Double hours;
 
-    @Column(length = 64)
+    @Column(name = "shift_type", length = 64)
     private String shiftType;
 
+    @Column(name = "status")
     private Integer status;
 }

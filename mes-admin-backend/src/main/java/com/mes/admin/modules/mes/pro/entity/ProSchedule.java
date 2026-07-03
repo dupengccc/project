@@ -22,26 +22,30 @@ import java.util.Date;
 @Table(name = "mes_pro_schedule")
 public class ProSchedule extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "schedule_code", length = 64)
     private String scheduleCode;
 
-    @Column(length = 64)
+    @Column(name = "order_code", length = 64)
     private String orderCode;
 
-    @Column(length = 128)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
-    @Column(length = 64)
+    @Column(name = "workshop_name", length = 64)
     private String workshopName;
 
-    @Column(length = 64)
+    @Column(name = "workstation_name", length = 64)
     private String workstationName;
 
+    @Column(name = "schedule_date")
     private Date scheduleDate;
 
+    @Column(name = "plan_qty")
     private Double planQty;
 
+    @Column(name = "completed_qty")
     private Double completedQty;
 
+    @Column(name = "status")
     private Integer status;
 }

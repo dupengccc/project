@@ -16,30 +16,33 @@ import javax.persistence.Table;
 @Table(name = "sys_org")
 public class SysOrg extends BaseEntity {
 
+    @Column(name = "parent_id")
     private Long parentId;
 
-    @Column(length = 64)
+    @Column(name = "org_code", length = 64)
     private String orgCode;
 
-    @Column(length = 128)
+    @Column(name = "name", length = 128)
     private String name;
 
-    @Column(length = 32)
+    @Column(name = "org_type", length = 32)
     private String orgType;
 
-    @Column(length = 64)
+    @Column(name = "leader", length = 64)
     private String leader;
 
-    @Column(length = 32)
+    @Column(name = "phone", length = 32)
     private String phone;
 
-    @Column(length = 128)
+    @Column(name = "email", length = 128)
     private String email;
 
-    @Column(length = 255)
+    @Column(name = "address", length = 255)
     private String address;
 
+    @Column(name = "sort")
     private Integer sort;
 
+    @Column(name = "status")
     private Integer status;
 }

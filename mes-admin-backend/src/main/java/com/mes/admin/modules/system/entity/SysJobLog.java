@@ -24,26 +24,27 @@ public class SysJobLog {
     private Long id;
 
     /** 任务名称 */
-    @Column(length = 64)
+    @Column(name = "job_name", length = 64)
     private String jobName;
 
     /** 任务组名 */
-    @Column(length = 64)
+    @Column(name = "job_group", length = 64)
     private String jobGroup;
 
     /** 调用目标字符串 */
-    @Column(length = 500)
+    @Column(name = "invoke_target", length = 500)
     private String invokeTarget;
 
     /** 日志信息 */
-    @Column(length = 500)
+    @Column(name = "job_message", length = 500)
     private String jobMessage;
 
     /** 执行状态（0成功 1失败） */
+    @Column(name = "status")
     private Integer status;
 
     /** 异常信息 */
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "exception_info", columnDefinition = "TEXT")
     private String exceptionInfo;
 
     /** 开始时间 */
@@ -55,6 +56,7 @@ public class SysJobLog {
     private Date endTime;
 
     /** 耗时（毫秒） */
+    @Column(name = "cost_time")
     private Long costTime;
 
     /** 新增前自动生成ID */

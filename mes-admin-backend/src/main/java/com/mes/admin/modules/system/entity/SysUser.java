@@ -17,34 +17,39 @@ import java.util.Date;
 @Table(name = "sys_user")
 public class SysUser extends BaseEntity {
 
-    @Column(length = 64, unique = true)
+    @Column(name = "username", length = 64, unique = true)
     private String username;
 
-    @Column(length = 255)
+    @Column(name = "password", length = 255)
     private String password;
 
-    @Column(length = 64)
+    @Column(name = "nickname", length = 64)
     private String nickname;
 
-    @Column(length = 128)
+    @Column(name = "email", length = 128)
     private String email;
 
-    @Column(length = 32)
+    @Column(name = "phone", length = 32)
     private String phone;
 
+    @Column(name = "gender")
     private Integer gender;
 
-    @Column(length = 255)
+    @Column(name = "avatar", length = 255)
     private String avatar;
 
+    @Column(name = "dept_id")
     private Long deptId;
 
+    @Column(name = "status")
     private Integer status;
 
-    @Column(length = 64)
+    @Column(name = "login_ip", length = 64)
     private String loginIp;
 
+    @Column(name = "login_date")
     private Date loginDate;
 
+    @Column(name = "last_login_date")
     private Date lastLoginDate;
 }

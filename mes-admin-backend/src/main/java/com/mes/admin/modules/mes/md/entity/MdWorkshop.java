@@ -21,19 +21,21 @@ import javax.persistence.Table;
 @Table(name = "mes_md_workshop")
 public class MdWorkshop extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "workshop_code", length = 64)
     private String workshopCode;
 
-    @Column(length = 128)
+    @Column(name = "workshop_name", length = 128)
     private String workshopName;
 
-    @Column(length = 32)
+    @Column(name = "leader", length = 32)
     private String leader;
 
-    @Column(length = 32)
+    @Column(name = "phone", length = 32)
     private String phone;
 
+    @Column(name = "area")
     private Double area;
 
+    @Column(name = "status")
     private Integer status;
 }

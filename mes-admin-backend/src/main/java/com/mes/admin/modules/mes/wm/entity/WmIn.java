@@ -24,28 +24,31 @@ import java.util.Date;
 @Table(name = "mes_wm_in")
 public class WmIn extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "in_code", length = 64)
     private String inCode;
 
-    @Column(length = 128)
+    @Column(name = "material_name", length = 128)
     private String materialName;
 
+    @Column(name = "in_qty")
     private Double inQty;
 
-    @Column(length = 32)
+    @Column(name = "unit", length = 32)
     private String unit;
 
-    @Column(length = 128)
+    @Column(name = "vendor_name", length = 128)
     private String vendorName;
 
-    @Column(length = 128)
+    @Column(name = "warehouse_name", length = 128)
     private String warehouseName;
 
+    @Column(name = "in_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date inDate;
 
-    @Column(length = 64)
+    @Column(name = "operator", length = 64)
     private String operator;
 
+    @Column(name = "status")
     private Integer status;
 }

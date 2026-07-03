@@ -22,19 +22,21 @@ import java.util.Date;
 @Table(name = "mes_cal_calendar")
 public class CalCalendar extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "calendar_code", length = 64)
     private String calendarCode;
 
+    @Column(name = "calendar_date")
     private Date calendarDate;
 
-    @Column(length = 128)
+    @Column(name = "team_name", length = 128)
     private String teamName;
 
-    @Column(length = 128)
+    @Column(name = "shift_name", length = 128)
     private String shiftName;
 
-    @Column(length = 500)
+    @Column(name = "member_names", length = 500)
     private String memberNames;
 
+    @Column(name = "member_count")
     private Integer memberCount;
 }

@@ -22,26 +22,27 @@ import java.util.Date;
 @Table(name = "mes_tm_tool")
 public class TmTool extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "tool_code", length = 64)
     private String toolCode;
 
-    @Column(length = 128)
+    @Column(name = "tool_name", length = 128)
     private String toolName;
 
-    @Column(length = 64)
+    @Column(name = "tool_type", length = 64)
     private String toolType;
 
-    @Column(length = 128)
+    @Column(name = "spec", length = 128)
     private String spec;
 
-    @Column(length = 128)
+    @Column(name = "workshop_name", length = 128)
     private String workshopName;
 
-    @Column(length = 128)
+    @Column(name = "storage_location", length = 128)
     private String storageLocation;
 
-    @Column(length = 64)
+    @Column(name = "status", length = 64)
     private String status;
 
+    @Column(name = "in_date")
     private Date inDate;
 }

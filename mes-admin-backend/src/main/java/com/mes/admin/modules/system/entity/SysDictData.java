@@ -16,25 +16,27 @@ import javax.persistence.Table;
 @Table(name = "sys_dict_data")
 public class SysDictData extends BaseEntity {
 
+    @Column(name = "dict_sort")
     private Integer dictSort;
 
-    @Column(length = 128)
+    @Column(name = "dict_label", length = 128)
     private String dictLabel;
 
-    @Column(length = 128)
+    @Column(name = "dict_value", length = 128)
     private String dictValue;
 
-    @Column(length = 128)
+    @Column(name = "dict_type", length = 128)
     private String dictType;
 
-    @Column(length = 128)
+    @Column(name = "css_class", length = 128)
     private String cssClass;
 
-    @Column(length = 128)
+    @Column(name = "list_class", length = 128)
     private String listClass;
 
-    @Column(length = 8)
+    @Column(name = "is_default", length = 8)
     private String isDefault;
 
+    @Column(name = "status")
     private Integer status;
 }

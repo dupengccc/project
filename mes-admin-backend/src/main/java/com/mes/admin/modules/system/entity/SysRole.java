@@ -16,14 +16,16 @@ import javax.persistence.Table;
 @Table(name = "sys_role")
 public class SysRole extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "role_name", length = 64)
     private String roleName;
 
-    @Column(length = 64)
+    @Column(name = "role_key", length = 64)
     private String roleKey;
 
+    @Column(name = "role_sort")
     private Integer roleSort;
 
+    @Column(name = "status")
     private Integer status;
 
     /**
@@ -34,9 +36,9 @@ public class SysRole extends BaseEntity {
      * 4 - 本部门及以下
      * 5 - 仅本人数据
      */
-    @Column(length = 2)
+    @Column(name = "data_scope", length = 2)
     private String dataScope;
 
-    @Column(length = 255)
+    @Column(name = "remark", length = 255)
     private String remark;
 }

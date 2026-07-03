@@ -21,19 +21,21 @@ import javax.persistence.Table;
 @Table(name = "mes_md_route")
 public class MdRoute extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "route_code", length = 64)
     private String routeCode;
 
-    @Column(length = 128)
+    @Column(name = "route_name", length = 128)
     private String routeName;
 
-    @Column(length = 128)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
-    @Column(length = 255)
+    @Column(name = "description", length = 255)
     private String description;
 
+    @Column(name = "process_count")
     private Integer processCount;
 
+    @Column(name = "status")
     private Integer status;
 }

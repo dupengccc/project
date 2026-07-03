@@ -21,16 +21,18 @@ import javax.persistence.Table;
 @Table(name = "mes_md_process")
 public class MdProcess extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "process_code", length = 64)
     private String processCode;
 
-    @Column(length = 128)
+    @Column(name = "process_name", length = 128)
     private String processName;
 
-    @Column(length = 16)
+    @Column(name = "process_type", length = 16)
     private String processType;
 
+    @Column(name = "standard_time")
     private Double standardTime;
 
+    @Column(name = "status")
     private Integer status;
 }

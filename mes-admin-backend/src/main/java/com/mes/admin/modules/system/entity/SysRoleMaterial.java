@@ -20,16 +20,18 @@ import javax.persistence.Table;
 public class SysRoleMaterial extends BaseEntity {
 
     /** 角色ID */
+    @Column(name = "role_id")
     private Long roleId;
 
     /** 物料ID */
+    @Column(name = "material_id")
     private Long materialId;
 
     /** 物料编码（冗余存储，便于查询） */
-    @Column(length = 64)
+    @Column(name = "material_code", length = 64)
     private String materialCode;
 
     /** 物料名称（冗余存储，便于查询） */
-    @Column(length = 128)
+    @Column(name = "material_name", length = 128)
     private String materialName;
 }

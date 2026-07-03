@@ -21,30 +21,33 @@ import javax.persistence.Table;
 @Table(name = "mes_wm_stock")
 public class WmStock extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "material_code", length = 64)
     private String materialCode;
 
-    @Column(length = 128)
+    @Column(name = "material_name", length = 128)
     private String materialName;
 
-    @Column(length = 128)
+    @Column(name = "spec", length = 128)
     private String spec;
 
-    @Column(length = 128)
+    @Column(name = "warehouse_name", length = 128)
     private String warehouseName;
 
-    @Column(length = 128)
+    @Column(name = "area_name", length = 128)
     private String areaName;
 
-    @Column(length = 128)
+    @Column(name = "location_name", length = 128)
     private String locationName;
 
+    @Column(name = "stock_qty")
     private Double stockQty;
 
+    @Column(name = "safe_stock")
     private Double safeStock;
 
-    @Column(length = 32)
+    @Column(name = "unit", length = 32)
     private String unit;
 
+    @Column(name = "status")
     private Integer status;
 }

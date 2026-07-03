@@ -24,28 +24,31 @@ import java.util.Date;
 @Table(name = "mes_wm_out")
 public class WmOut extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "out_code", length = 64)
     private String outCode;
 
-    @Column(length = 128)
+    @Column(name = "material_name", length = 128)
     private String materialName;
 
+    @Column(name = "out_qty")
     private Double outQty;
 
-    @Column(length = 32)
+    @Column(name = "unit", length = 32)
     private String unit;
 
-    @Column(length = 128)
+    @Column(name = "receive_dept", length = 128)
     private String receiveDept;
 
-    @Column(length = 128)
+    @Column(name = "warehouse_name", length = 128)
     private String warehouseName;
 
+    @Column(name = "out_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date outDate;
 
-    @Column(length = 64)
+    @Column(name = "operator", length = 64)
     private String operator;
 
+    @Column(name = "status")
     private Integer status;
 }

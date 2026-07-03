@@ -24,29 +24,34 @@ import java.util.Date;
 @Table(name = "mes_qc_record")
 public class QcRecord extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "record_code", length = 64)
     private String recordCode;
 
-    @Column(length = 128)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
+    @Column(name = "check_qty")
     private Double checkQty;
 
+    @Column(name = "qualified_qty")
     private Double qualifiedQty;
 
+    @Column(name = "unqualified_qty")
     private Double unqualifiedQty;
 
-    @Column(length = 32)
+    @Column(name = "check_result", length = 32)
     private String checkResult;
 
-    @Column(length = 64)
+    @Column(name = "checker", length = 64)
     private String checker;
 
+    @Column(name = "check_time")
     @Temporal(TemporalType.TIMESTAMP)
     private Date checkTime;
 
-    @Column(length = 64)
+    @Column(name = "order_code", length = 64)
     private String orderCode;
 
+    @Column(name = "status")
     private Integer status;
 }

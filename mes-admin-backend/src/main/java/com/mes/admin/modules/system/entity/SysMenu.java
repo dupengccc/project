@@ -16,40 +16,45 @@ import javax.persistence.Table;
 @Table(name = "sys_menu")
 public class SysMenu extends BaseEntity {
 
+    @Column(name = "parent_id")
     private Long parentId;
 
-    @Column(length = 64)
+    @Column(name = "menu_name", length = 64)
     private String menuName;
 
-    @Column(length = 255)
+    @Column(name = "path", length = 255)
     private String path;
 
-    @Column(length = 255)
+    @Column(name = "component", length = 255)
     private String component;
 
-    @Column(length = 255)
+    @Column(name = "query", length = 255)
     private String query;
 
-    @Column(length = 64)
+    @Column(name = "route_name", length = 64)
     private String routeName;
 
+    @Column(name = "is_frame")
     private Integer isFrame;
 
+    @Column(name = "is_cache")
     private Integer isCache;
 
-    @Column(length = 8)
+    @Column(name = "menu_type", length = 8)
     private String menuType;
 
-    @Column(length = 8)
+    @Column(name = "visible", length = 8)
     private String visible;
 
+    @Column(name = "status")
     private Integer status;
 
-    @Column(length = 128)
+    @Column(name = "perms", length = 128)
     private String perms;
 
-    @Column(length = 64)
+    @Column(name = "icon", length = 64)
     private String icon;
 
+    @Column(name = "sort")
     private Integer sort;
 }

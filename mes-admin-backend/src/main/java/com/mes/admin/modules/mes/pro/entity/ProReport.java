@@ -22,26 +22,30 @@ import java.util.Date;
 @Table(name = "mes_pro_report")
 public class ProReport extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "report_code", length = 64)
     private String reportCode;
 
-    @Column(length = 64)
+    @Column(name = "order_code", length = 64)
     private String orderCode;
 
-    @Column(length = 128)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
-    @Column(length = 64)
+    @Column(name = "process_name", length = 64)
     private String processName;
 
-    @Column(length = 64)
+    @Column(name = "operator", length = 64)
     private String operator;
 
+    @Column(name = "report_qty")
     private Double reportQty;
 
+    @Column(name = "bad_qty")
     private Double badQty;
 
+    @Column(name = "report_time")
     private Date reportTime;
 
+    @Column(name = "status")
     private Integer status;
 }

@@ -22,21 +22,24 @@ import java.util.Date;
 @Table(name = "mes_cal_plan")
 public class CalPlan extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "plan_code", length = 64)
     private String planCode;
 
-    @Column(length = 128)
+    @Column(name = "team_name", length = 128)
     private String teamName;
 
+    @Column(name = "plan_date")
     private Date planDate;
 
-    @Column(length = 128)
+    @Column(name = "shift_name", length = 128)
     private String shiftName;
 
+    @Column(name = "member_count")
     private Integer memberCount;
 
-    @Column(length = 64)
+    @Column(name = "creator", length = 64)
     private String creator;
 
+    @Column(name = "status")
     private Integer status;
 }

@@ -20,27 +20,30 @@ import javax.persistence.Table;
 public class SysDict extends BaseEntity {
 
     /** 字典名称 */
-    @Column(length = 128)
+    @Column(name = "dict_name", length = 128)
     private String dictName;
 
     /** 字典编码（唯一） */
-    @Column(length = 128)
+    @Column(name = "dict_code", length = 128)
     private String dictCode;
 
     /** 父节点ID（0=根节点） */
+    @Column(name = "parent_id")
     private Long parentId;
 
     /** 父节点编码（可为空，根节点用） */
-    @Column(length = 128)
+    @Column(name = "parent_code", length = 128)
     private String parentCode;
 
     /** 字典值（供下拉框使用，可存 id 或 code） */
-    @Column(length = 128)
+    @Column(name = "dict_value", length = 128)
     private String dictValue;
 
     /** 排序号 */
+    @Column(name = "sort")
     private Integer sort;
 
     /** 状态 0=激活 1=停用 */
+    @Column(name = "status")
     private Integer status;
 }

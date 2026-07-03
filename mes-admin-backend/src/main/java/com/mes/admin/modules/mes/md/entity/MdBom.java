@@ -21,17 +21,18 @@ import javax.persistence.Table;
 @Table(name = "mes_md_bom")
 public class MdBom extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "bom_code", length = 64)
     private String bomCode;
 
-    @Column(length = 128)
+    @Column(name = "bom_name", length = 128)
     private String bomName;
 
-    @Column(length = 128)
+    @Column(name = "product_name", length = 128)
     private String productName;
 
-    @Column(length = 32)
+    @Column(name = "version", length = 32)
     private String version;
 
+    @Column(name = "status")
     private Integer status;
 }

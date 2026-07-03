@@ -22,29 +22,33 @@ import java.util.Date;
 @Table(name = "mes_dv_device")
 public class DvDevice extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "device_code", length = 64)
     private String deviceCode;
 
-    @Column(length = 128)
+    @Column(name = "device_name", length = 128)
     private String deviceName;
 
-    @Column(length = 64)
+    @Column(name = "device_type", length = 64)
     private String deviceType;
 
-    @Column(length = 128)
+    @Column(name = "spec", length = 128)
     private String spec;
 
+    @Column(name = "workshop_id")
     private Long workshopId;
 
-    @Column(length = 128)
+    @Column(name = "workshop_name", length = 128)
     private String workshopName;
 
-    @Column(length = 64)
+    @Column(name = "leader", length = 64)
     private String leader;
 
+    @Column(name = "purchase_date")
     private Date purchaseDate;
 
+    @Column(name = "service_years")
     private Integer serviceYears;
 
+    @Column(name = "status")
     private Integer status;
 }

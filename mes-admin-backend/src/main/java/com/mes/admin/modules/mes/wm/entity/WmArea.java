@@ -21,21 +21,24 @@ import javax.persistence.Table;
 @Table(name = "mes_wm_area")
 public class WmArea extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "area_code", length = 64)
     private String areaCode;
 
-    @Column(length = 128)
+    @Column(name = "area_name", length = 128)
     private String areaName;
 
+    @Column(name = "warehouse_id")
     private Long warehouseId;
 
-    @Column(length = 128)
+    @Column(name = "warehouse_name", length = 128)
     private String warehouseName;
 
-    @Column(length = 32)
+    @Column(name = "area_type", length = 32)
     private String areaType;
 
+    @Column(name = "area_size")
     private Double areaSize;
 
+    @Column(name = "status")
     private Integer status;
 }

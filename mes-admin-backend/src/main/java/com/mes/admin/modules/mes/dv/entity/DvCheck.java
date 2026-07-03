@@ -22,27 +22,30 @@ import java.util.Date;
 @Table(name = "mes_dv_check")
 public class DvCheck extends BaseEntity {
 
-    @Column(length = 64)
+    @Column(name = "check_code", length = 64)
     private String checkCode;
 
-    @Column(length = 64)
+    @Column(name = "device_code", length = 64)
     private String deviceCode;
 
-    @Column(length = 128)
+    @Column(name = "device_name", length = 128)
     private String deviceName;
 
-    @Column(length = 64)
+    @Column(name = "check_type", length = 64)
     private String checkType;
 
-    @Column(length = 64)
+    @Column(name = "checker", length = 64)
     private String checker;
 
+    @Column(name = "check_date")
     private Date checkDate;
 
-    @Column(length = 64)
+    @Column(name = "check_result", length = 64)
     private String checkResult;
 
+    @Column(name = "next_check_date")
     private Date nextCheckDate;
 
+    @Column(name = "status")
     private Integer status;
 }
