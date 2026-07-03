@@ -12,10 +12,6 @@ spring:
           url: jdbc:dm://127.0.0.1:5236/MES
         slave:
           url: jdbc:dm://127.0.0.1:5236/MES_SLAVE
-        mes:
-          url: jdbc:mysql://127.0.0.1:3306/mes?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8
-          username: root
-          password: root
   jpa:
     show-sql: true
   redis:

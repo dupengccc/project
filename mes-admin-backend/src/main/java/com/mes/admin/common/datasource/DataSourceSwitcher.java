@@ -8,21 +8,21 @@ package com.mes.admin.common.datasource;
  * 使用示例：
  *
  * 1. 手动切换（需要手动恢复）
- *    DataSourceSwitcher.switchTo("mes");
+ *    DataSourceSwitcher.switchTo("slave");
  *    try {
- *        // 使用 MES 数据源的查询
+ *        // 使用从数据源的查询
  *        List<MdMaterial> list = sqlQuery.findList(MdMaterial.class, "SELECT * FROM mes_md_material");
  *    } finally {
  *        DataSourceSwitcher.restore(); // 恢复默认数据源
  *    }
  *
  * 2. 自动切换（使用 Lambda，推荐）
- *    List<MdMaterial> list = DataSourceSwitcher.execute("mes", () -> {
+ *    List<MdMaterial> list = DataSourceSwitcher.execute("slave", () -> {
  *        return sqlQuery.findList(MdMaterial.class, "SELECT * FROM mes_md_material");
  *    });
  *
  * 3. 使用 @DataSource 注解（推荐，AOP 自动处理）
- *    @DataSource("mes")
+ *    @DataSource("slave")
  *    public List<MdMaterial> findAllMaterials() {
  *        return sqlQuery.findList(MdMaterial.class, "SELECT * FROM mes_md_material");
  *    }
@@ -31,12 +31,11 @@ public class DataSourceSwitcher {
 
     public static final String MASTER = "master";
     public static final String SLAVE = "slave";
-    public static final String MES = "mes";
 
     /**
      * 切换到指定数据源
      *
-     * @param dataSource 数据源名称（master/slave/mes）
+     * @param dataSource 数据源名称（master/slave）
      */
     public static void switchTo(String dataSource) {
         DynamicDataSourceContextHolder.setDataSourceType(dataSource);
@@ -76,13 +75,6 @@ public class DataSourceSwitcher {
      */
     public static <T> T executeOnMaster(DataSourceAction<T> action) {
         return execute(MASTER, action);
-    }
-
-    /**
-     * 在 MES 数据源执行
-     */
-    public static <T> T executeOnMes(DataSourceAction<T> action) {
-        return execute(MES, action);
     }
 
     /**

@@ -54,9 +54,9 @@ public class SqlQueryExamples {
     // ==================== 跨数据源查询 ====================
 
     /**
-     * 示例4：查询 MES 数据源（使用 @DataSource 注解）
+     * 示例4：使用从数据源查询（使用 @DataSource 注解）
      */
-    @DataSource("mes")
+    @DataSource("slave")
     public List<MdMaterial> findMaterialsByType(String materialType) {
         return sqlQuery.findList(MdMaterial.class,
                 "SELECT * FROM mes_md_material WHERE material_type = ?", materialType);
@@ -66,7 +66,7 @@ public class SqlQueryExamples {
      * 示例5：使用 DataSourceSwitcher 手动切换
      */
     public List<MdMaterial> findMaterialsManual() {
-        return DataSourceSwitcher.executeOnMes(() ->
+        return DataSourceSwitcher.executeOnSlave(() ->
                 sqlQuery.findList(MdMaterial.class,
                         "SELECT * FROM mes_md_material WHERE status = 0")
         );
@@ -99,7 +99,7 @@ public class SqlQueryExamples {
     /**
      * 示例8：查询单值（求和）
      */
-    @DataSource("mes")
+    @DataSource("slave")
     public Double sumMaterialSafeStock() {
         return sqlQuery.queryForValue("SELECT SUM(safe_stock) FROM mes_md_material WHERE status = 0");
     }
@@ -125,15 +125,14 @@ public class SqlQueryExamples {
     /**
      * 示例10：分页查询
      */
-    @DataSource("mes")
+    @DataSource("slave")
     public Map<String, Object> findMaterialsPage(int page, int pageSize, String materialType) {
         int offset = (page - 1) * pageSize;
 
         String countSql = "SELECT COUNT(*) FROM mes_md_material WHERE material_type = ?";
         String dataSql = "SELECT * FROM mes_md_material WHERE material_type = ? ORDER BY id OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
-        // 注意：达梦/Oracle 使用 OFFSET ... ROWS FETCH NEXT ... ROWS ONLY
-        // MySQL 使用 LIMIT ... OFFSET ...
+        // 达梦/Oracle 均使用 OFFSET ... ROWS FETCH NEXT ... ROWS ONLY 分页语法
         return sqlQuery.findPage(MdMaterial.class, countSql, dataSql, materialType, offset, pageSize);
     }
 

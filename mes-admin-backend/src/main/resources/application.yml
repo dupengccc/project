@@ -18,6 +18,9 @@ spring:
     default-property-inclusion: non_null
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
+    # 本系统支持 Oracle 与 达梦(DM) 两种数据库
+    # 达梦：  driver-class-name: dm.jdbc.driver.DmDriver       url: jdbc:dm://host:5236/SCHEMA
+    # Oracle：driver-class-name: oracle.jdbc.OracleDriver      url: jdbc:oracle:thin:@host:1521:ORCL
     driver-class-name: dm.jdbc.driver.DmDriver
     url: jdbc:dm://127.0.0.1:5236/MES
     username: SYSDBA
@@ -34,11 +37,6 @@ spring:
           url: jdbc:dm://127.0.0.1:5236/MES_SLAVE
           username: SYSDBA
           password: SYSDBA
-        mes:
-          driver-class-name: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://127.0.0.1:3306/mes?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8
-          username: root
-          password: root
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
@@ -49,10 +47,14 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    # Hibernate 方言，支持达梦与 Oracle：
+    #   达梦：org.hibernate.dialect.DmDialect
+    #   Oracle 12c+：org.hibernate.dialect.Oracle12cDialect
+    #   Oracle 旧版：org.hibernate.dialect.Oracle10gDialect
+    database-platform: org.hibernate.dialect.DmDialect
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.DmDialect
   redis:
     host: 127.0.0.1
     port: 6379

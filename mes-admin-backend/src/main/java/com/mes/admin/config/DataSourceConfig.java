@@ -12,6 +12,12 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 多数据源配置
+ * <p>
+ * 本系统支持 Oracle 与 达梦(DM) 两种数据库，通过 yml 配置驱动与连接地址即可切换。
+ * master 为主数据源（默认），slave 为从数据源（读写分离场景）。
+ */
 @Configuration
 public class DataSourceConfig {
 
@@ -38,18 +44,6 @@ public class DataSourceConfig {
 
     @Value("${spring.datasource.dynamic.datasource.slave.driver-class-name}")
     private String slaveDriver;
-
-    @Value("${spring.datasource.dynamic.datasource.mes.url}")
-    private String mesUrl;
-
-    @Value("${spring.datasource.dynamic.datasource.mes.username}")
-    private String mesUsername;
-
-    @Value("${spring.datasource.dynamic.datasource.mes.password}")
-    private String mesPassword;
-
-    @Value("${spring.datasource.dynamic.datasource.mes.driver-class-name}")
-    private String mesDriver;
 
     @Value("${spring.datasource.hikari.minimum-idle:5}")
     private int minIdle;
@@ -90,21 +84,14 @@ public class DataSourceConfig {
         return build(slaveDriver, slaveUrl, slaveUsername, slavePassword);
     }
 
-    @Bean("mesDataSource")
-    public DataSource mesDataSource() {
-        return build(mesDriver, mesUrl, mesUsername, mesPassword);
-    }
-
     @Bean
     @Primary
     public DataSource dynamicDataSource(@Qualifier("masterDataSource") DataSource master,
-                                        @Qualifier("slaveDataSource") DataSource slave,
-                                        @Qualifier("mesDataSource") DataSource mes) {
+                                        @Qualifier("slaveDataSource") DataSource slave) {
         DynamicDataSource dynamic = new DynamicDataSource();
         Map<Object, Object> targetDataSources = new HashMap<>();
         targetDataSources.put("master", master);
         targetDataSources.put("slave", slave);
-        targetDataSources.put("mes", mes);
         dynamic.setTargetDataSources(targetDataSources);
         dynamic.setDefaultTargetDataSource(master);
         return dynamic;

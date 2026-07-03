@@ -13,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  *          Spring Data JPA + 多数据源
  *          Redis + JWT + Spring Security
  *          Knife4j (Swagger) + OpenOffice
- *          达梦数据库支持
+ *          数据库支持：Oracle / 达梦(DM)
  */
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
 @EnableAsync
