@@ -313,11 +313,13 @@ public class SysInterfaceService {
 
         Long totalCount = logRepository.countByCallTimeBetween(startDate, endDate);
         Long errorCount = logRepository.countErrorByCallTimeBetween(startDate, endDate);
+        long total = totalCount != null ? totalCount : 0L;
+        long error = errorCount != null ? errorCount : 0L;
 
-        stats.put("totalCount", totalCount);
-        stats.put("errorCount", errorCount);
-        stats.put("successCount", totalCount - errorCount);
-        stats.put("successRate", totalCount > 0 ? String.format("%.2f%%", (totalCount - errorCount) * 100.0 / totalCount) : "0%");
+        stats.put("totalCount", total);
+        stats.put("errorCount", error);
+        stats.put("successCount", total - error);
+        stats.put("successRate", total > 0 ? String.format("%.2f%%", (total - error) * 100.0 / total) : "0%");
 
         return stats;
     }
@@ -376,17 +378,17 @@ public class SysInterfaceService {
         }
     }
 
-    private void parseBizStatus(SysInterfaceLog log, HttpCallUtil.HttpResponse response) {
+    private void parseBizStatus(SysInterfaceLog callLog, HttpCallUtil.HttpResponse response) {
         try {
             JSONObject bodyJson = response.getBodyAsJson();
             if (bodyJson != null) {
                 if (bodyJson.containsKey("code")) {
-                    log.setBizStatus(bodyJson.getString("code"));
+                    callLog.setBizStatus(bodyJson.getString("code"));
                 }
                 if (bodyJson.containsKey("msg")) {
-                    log.setBizMessage(bodyJson.getString("msg"));
+                    callLog.setBizMessage(bodyJson.getString("msg"));
                 } else if (bodyJson.containsKey("message")) {
-                    log.setBizMessage(bodyJson.getString("message"));
+                    callLog.setBizMessage(bodyJson.getString("message"));
                 }
             }
         } catch (Exception e) {

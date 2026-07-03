@@ -83,7 +83,7 @@ public class SysProductionUnitService {
             try {
                 Optional<SysOrg> orgOpt = orgRepository.findById(unit.getOrgId());
                 if (orgOpt.isPresent()) {
-                    unit.setOrgName(orgOpt.get().getOrgName());
+                    unit.setOrgName(orgOpt.get().getName());
                 }
             } catch (Exception ignored) {}
         }
@@ -110,7 +110,7 @@ public class SysProductionUnitService {
             try {
                 Optional<SysOrg> orgOpt = orgRepository.findById(unit.getOrgId());
                 if (orgOpt.isPresent()) {
-                    unit.setOrgName(orgOpt.get().getOrgName());
+                    unit.setOrgName(orgOpt.get().getName());
                 }
             } catch (Exception ignored) {}
         }

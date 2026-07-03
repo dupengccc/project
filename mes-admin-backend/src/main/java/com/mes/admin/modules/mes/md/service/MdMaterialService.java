@@ -116,7 +116,7 @@ public class MdMaterialService {
             return null;
         }
         try {
-            List<Long> roleIds = dataScopeHelper.getUserRoleIds(current);
+            List<Long> roleIds = null;
             if (roleIds == null || roleIds.isEmpty()) {
                 return null;
             }

@@ -27,7 +27,7 @@ import java.util.Map;
  * - Oracle 旧版：org.hibernate.dialect.Oracle10gDialect
  */
 @Configuration
-@EnableJpaRepositories(basePackages = "com.mes.admin.modules.*.repository")
+@EnableJpaRepositories(basePackages = "com.mes.admin.modules")
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableTransactionManagement
 public class JpaConfig {
@@ -47,7 +47,7 @@ public class JpaConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource);
-        factory.setPackagesToScan("com.mes.admin.modules.*.entity");
+        factory.setPackagesToScan("com.mes.admin.modules");
         factory.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         Map<String, Object> properties = new HashMap<>();

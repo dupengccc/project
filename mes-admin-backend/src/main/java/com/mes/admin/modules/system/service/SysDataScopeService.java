@@ -209,7 +209,7 @@ public class SysDataScopeService {
         for (SysOrg org : orgs) {
             Map<String, Object> node = new LinkedHashMap<>();
             node.put("id", org.getId());
-            node.put("label", org.getOrgName() != null ? org.getOrgName() : "");
+            node.put("label", org.getName() != null ? org.getName() : "");
             node.put("orgCode", org.getOrgCode());
             node.put("orgType", org.getOrgType());
             node.put("parentId", org.getParentId());
@@ -307,7 +307,7 @@ public class SysDataScopeService {
         SysOrg org = new SysOrg();
         org.setId(id);
         org.setParentId(parentId);
-        org.setOrgName(name);
+        org.setName(name);
         org.setOrgCode(code);
         org.setOrgType(type);
         return org;

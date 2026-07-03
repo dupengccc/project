@@ -145,7 +145,7 @@ public class HttpCallUtil {
             ResponseEntity<String> exchange = template.exchange(url, method, requestEntity, String.class);
 
             response.setSuccess(true);
-            response.setStatusCode(exchange.getStatusCodeValue());
+            response.setStatusCode(exchange.getStatusCode().value());
             response.setBody(exchange.getBody());
             response.setHeaders(JSON.toJSONString(exchange.getHeaders()));
 
@@ -180,7 +180,7 @@ public class HttpCallUtil {
             sb.append(k).append("=");
             if (v != null) {
                 try {
-                    sb.append(java.net.URLEncoder.encode(v.toString(), StandardCharsets.UTF_8));
+                    sb.append(java.net.URLEncoder.encode(v.toString(), "UTF-8"));
                 } catch (Exception e) {
                     sb.append(v);
                 }

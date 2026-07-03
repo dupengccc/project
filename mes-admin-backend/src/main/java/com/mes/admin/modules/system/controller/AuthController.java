@@ -25,9 +25,6 @@ public class AuthController {
     private SysUserService sysUserService;
 
     @Autowired
-    private org.springframework.web.context.request.RequestContextHolder requestContextHolderRef;
-
-    @Autowired
     private SysLoginLogService sysLoginLogService;
 
     @Autowired

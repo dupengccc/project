@@ -6,50 +6,54 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 全局ID生成器
- * 生成规则：17位时间戳(yyyyMMddHHmmssSSS) + 3位自增序号 = 共20位
- * 例如：20260618153012123001
+ * 生成规则：14位时间戳(yyyyMMddHHmmss) + 4位自增序号 = 共18位
+ * 例如：202606181530120001
  *
  * 保证：
- * 1. 同一毫秒内不同实体不会冲突（通过 AtomicInteger 自增）
- * 2. 自增序号超过 999 时自动重置，等待下一毫秒
+ * 1. 同一秒内不同实体不会冲突（通过 AtomicInteger 自增）
+ * 2. 自增序号超过 9999 时自动重置，等待下一秒
  * 3. 多线程安全（AtomicInteger + synchronized 双重保障）
+ * 4. 18位数字不超过 Long.MAX_VALUE（9223372036854775807，19位）
  */
 public class IdGenerator {
 
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMddHHmmss");
     private static final AtomicInteger SEQ = new AtomicInteger(0);
-    private static final int SEQ_MAX = 999;
-    private static long lastTimestamp = 0;
+    private static final int SEQ_MAX = 9999;
+    private static long lastSecond = 0;
 
     /**
-     * 生成20位数字ID
+     * 生成18位数字ID
      * @return Long 类型的ID
      */
     public static synchronized Long generateId() {
-        long timestamp = System.currentTimeMillis();
-        // 时间戳回拨了，强制使用最新时间
-        if (timestamp < lastTimestamp) {
-            timestamp = lastTimestamp;
+        long currentTime = System.currentTimeMillis();
+        long currentSecond = currentTime / 1000;
+
+        // 时间回拨，强制使用最新时间
+        if (currentSecond < lastSecond) {
+            currentSecond = lastSecond;
         }
-        // 同一毫秒内自增
-        if (timestamp == lastTimestamp) {
+
+        // 同一秒内自增
+        if (currentSecond == lastSecond) {
             int seq = SEQ.incrementAndGet();
             if (seq > SEQ_MAX) {
-                // 序号用尽，等待下一毫秒
-                while (System.currentTimeMillis() <= lastTimestamp) {
+                // 序号用尽，等待下一秒
+                while (System.currentTimeMillis() / 1000 <= lastSecond) {
                     // busy wait
                 }
-                timestamp = System.currentTimeMillis();
+                currentSecond = System.currentTimeMillis() / 1000;
                 SEQ.set(0);
             }
         } else {
-            // 新的毫秒，重置序号
+            // 新的秒，重置序号
             SEQ.set(0);
         }
-        lastTimestamp = timestamp;
+        lastSecond = currentSecond;
 
-        String ts = SDF.format(new Date(timestamp)); // 17位
-        String seqStr = String.format("%03d", SEQ.get()); // 3位
+        String ts = SDF.format(new Date(currentSecond * 1000)); // 14位
+        String seqStr = String.format("%04d", SEQ.get()); // 4位
         return Long.parseLong(ts + seqStr);
     }
 }

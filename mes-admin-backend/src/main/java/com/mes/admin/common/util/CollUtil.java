@@ -182,7 +182,6 @@ public class CollUtil {
     /**
      * 列表交集
      */
-    @SafeVarargs
     public static <T> List<T> intersection(List<T> list1, List<T> list2) {
         if (isEmpty(list1) || isEmpty(list2)) {
             return new ArrayList<>();
@@ -195,7 +194,6 @@ public class CollUtil {
     /**
      * 列表并集
      */
-    @SafeVarargs
     public static <T> List<T> union(List<T> list1, List<T> list2) {
         List<T> result = new ArrayList<>(isEmpty(list1) ? new ArrayList<>() : list1);
         if (isNotEmpty(list2)) {

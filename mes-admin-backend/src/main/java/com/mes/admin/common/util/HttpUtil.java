@@ -288,14 +288,14 @@ public class HttpUtil {
                 if (!first) {
                     sb.append("&");
                 }
-                sb.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
+                sb.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
                 if (entry.getValue() != null) {
                     sb.append("=");
-                    sb.append(URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8));
+                    sb.append(URLEncoder.encode(entry.getValue().toString(), "UTF-8"));
                 }
                 first = false;
             }
-        } catch (IOException e) {
+        } catch (java.io.UnsupportedEncodingException e) {
             throw new RuntimeException("URL 参数编码失败", e);
         }
         return sb.toString();

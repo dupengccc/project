@@ -9,6 +9,7 @@ import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -105,6 +106,7 @@ public class CronTaskRegistrar {
     }
 
     /** 销毁时关闭线程池 */
+    @PreDestroy
     public void destroy() {
         for (ScheduledFuture<?> future : scheduledTasks.values()) {
             future.cancel(false);
