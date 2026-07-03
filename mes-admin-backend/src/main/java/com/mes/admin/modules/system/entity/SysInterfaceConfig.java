@@ -3,6 +3,7 @@ package com.mes.admin.modules.system.entity;
 import com.mes.admin.common.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.persistence.Table;
  * 用于管理外部系统接口的配置信息
  */
 @Data
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_interface_config")

@@ -2,7 +2,7 @@ package com.mes.admin.modules.mes.pro.entity;
 
 import com.mes.admin.common.entity.BaseEntity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "mes_pro_workorder")

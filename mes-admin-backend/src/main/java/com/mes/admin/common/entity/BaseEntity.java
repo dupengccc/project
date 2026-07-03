@@ -2,6 +2,8 @@ package com.mes.admin.common.entity;
 
 import com.mes.admin.common.util.IdGenerator;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -22,8 +24,13 @@ import java.util.Date;
  * - createBy / createTime: 创建人、创建时间
  * - updateBy / updateTime: 更新人、更新时间
  * - remark: 备注
+ *
+ * 使用 @SuperBuilder 支持继承链上的 Builder 模式，
+ * 子类需同步标注 @SuperBuilder 才能使用 builder 构建父类字段。
  */
 @Data
+@SuperBuilder
+@NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {

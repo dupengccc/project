@@ -2,7 +2,7 @@ package com.mes.admin.modules.mes.md.entity;
 
 import com.mes.admin.common.entity.BaseEntity;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "mes_md_workshop")
