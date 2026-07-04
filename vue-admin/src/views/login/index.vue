@@ -3,11 +3,11 @@
     <!-- 背景轮播 -->
     <div class="bg-carousel">
       <div
-        v-for="(img, idx) in bgImages"
-        :key="idx"
-        class="bg-item"
-        :class="{ active: currentBg === idx }"
-        :style="{ backgroundImage: `url(${img})` }"
+          v-for="(img, idx) in bgImages"
+          :key="idx"
+          class="bg-item"
+          :class="{ active: currentBg === idx }"
+          :style="{ backgroundImage: `url(${img})` }"
       />
       <div class="bg-overlay" />
     </div>
@@ -26,25 +26,25 @@
       </div>
 
       <el-form
-        ref="loginFormRef"
-        :model="loginForm"
-        :rules="loginRules"
-        class="login-form"
-        label-position="top"
+          ref="loginFormRef"
+          :model="loginForm"
+          :rules="loginRules"
+          class="login-form"
+          label-position="top"
       >
         <!-- 分公司选择 -->
         <el-form-item prop="branchId" label="所属分公司">
           <el-select
-            v-model="loginForm.branchId"
-            placeholder="请选择所属分公司"
-            size="large"
-            style="width: 100%"
+              v-model="loginForm.branchId"
+              placeholder="请选择所属分公司"
+              size="large"
+              style="width: 100%"
           >
             <el-option
-              v-for="item in branchList"
-              :key="item.id"
-              :label="item.name"
-              :value="item.id"
+                v-for="item in branchList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
             >
               <div class="branch-option">
                 <el-icon><Office /></el-icon>
@@ -58,23 +58,23 @@
         <!-- 用户名 -->
         <el-form-item prop="username" label="用户名称">
           <el-input
-            v-model="loginForm.username"
-            placeholder="请输入用户名称"
-            prefix-icon="UserFilled"
-            size="large"
-            clearable
+              v-model="loginForm.username"
+              placeholder="请输入用户名称"
+              prefix-icon="UserFilled"
+              size="large"
+              clearable
           />
         </el-form-item>
 
         <!-- 密码 -->
         <el-form-item prop="password" label="登录密码">
           <el-input
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="请输入登录密码"
-            prefix-icon="Lock"
-            size="large"
-            @keyup.enter="handleLogin"
+              v-model="loginForm.password"
+              :type="passwordType"
+              placeholder="请输入登录密码"
+              prefix-icon="Lock"
+              size="large"
+              @keyup.enter="handleLogin"
           >
             <template #suffix>
               <el-icon class="pwd-toggle" @click="passwordType = passwordType === 'password' ? 'text' : 'password'">
@@ -91,11 +91,11 @@
 
         <!-- 登录按钮 -->
         <el-button
-          type="primary"
-          size="large"
-          :loading="loading"
-          class="login-btn"
-          @click="handleLogin"
+            type="primary"
+            size="large"
+            :loading="loading"
+            class="login-btn"
+            @click="handleLogin"
         >
           {{ loading ? '登录中...' : '登 录' }}
         </el-button>
@@ -146,8 +146,9 @@ const branchList = ref([
 async function loadBranchList() {
   try {
     const res = await getDictChildren('DICT_BRANCH')
-    if (res && res.data && res.data.length > 0) {
-      branchList.value = res.data.map(d => ({
+    const list = res?.data
+    if (Array.isArray(list) && list.length > 0) {
+      branchList.value = list.map(d => ({
         id: d.id,
         name: d.dictName,
         code: d.dictCode
@@ -197,13 +198,18 @@ function startBgCarousel() {
   }, 5000)
 }
 
+function findBranch(id) {
+  const list = branchList.value
+  return Array.isArray(list) ? list.find((b) => b.id === id) : undefined
+}
+
 async function handleLogin() {
   if (!loginFormRef.value) return
   await loginFormRef.value.validate(async (valid) => {
     if (!valid) return
     loading.value = true
     try {
-      const branch = branchList.find((b) => b.id === loginForm.branchId)
+      const branch = findBranch(loginForm.branchId)
       await userStore.login({
         username: loginForm.username,
         password: loginForm.password,
@@ -227,7 +233,7 @@ async function handleLogin() {
       router.push(redirect)
     } catch (e) {
       // 后端未就绪，模拟登录
-      const branch = branchList.find((b) => b.id === loginForm.branchId)
+      const branch = findBranch(loginForm.branchId)
       userStore.token = 'mock-token-' + Date.now()
       userStore.name = loginForm.username
       userStore.roles = ['admin']
